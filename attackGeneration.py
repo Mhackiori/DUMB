@@ -7,7 +7,6 @@ import torch
 from torch.utils.data import DataLoader
 from torchattacks import FGSM, DeepFool, BIM, RFGSM, PGD, TIFGSM
 from torchmetrics import StructuralSimilarityIndexMeasure
-import torchvision
 from torchvision import transforms
 
 from utils.balancedDataset import BalancedDataset
@@ -318,8 +317,8 @@ for attack_name in attacks_names_math:
                         "BIM": BIM(model, eps=eps),
                         "FGSM": FGSM(model, eps=eps),
                         "DeepFool": DeepFool(model, overshoot=eps),
-                        "RFGSM": RFGSM(model, eps=eps),
                         "PGD": PGD(model, eps=eps),
+                        "RFGSM": RFGSM(model, eps=eps),
                         "TIFGSM": TIFGSM(model, eps=eps)
                     }
                     for attack in attacks:
