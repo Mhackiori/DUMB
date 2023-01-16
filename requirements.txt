@@ -1,4 +1,7 @@
 difPy==2.4.4
+Pillow==9.2.0
+scikit-image==0.19.3
 torch==1.7.1
 torchattacks==3.0.0
+torchmetrics==0.10.1
 torchvision==0.8.2

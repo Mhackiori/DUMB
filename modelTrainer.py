@@ -9,11 +9,11 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+import torchvision
 from torchvision import models, transforms
 
 from utils.balancedDataset import BalancedDataset
 from utils.tasks import currentTask
-
 
 
 # Detect if we have a GPU available
@@ -55,9 +55,10 @@ momentum = 0.9  # The momentum of the optimizer
 ### HELPER FUNCTIONS ###
 
 
-def set_seed(seed):
+def setSeed(seed):
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
     torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     np.random.seed(seed)
 
@@ -122,7 +123,7 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
             labels_targets = torch.tensor([]).to(device, non_blocking=True)
 
             # Iterate over data
-            set_seed(SEED)
+            setSeed(SEED)
             for inputs, labels in dataloaders[phase]:
                 inputs = inputs.to(device, non_blocking=True)
                 labels = labels.to(device, non_blocking=True)
@@ -279,9 +280,102 @@ def evaluateModel(model, dataloader):
     return labelsOutputs
 
 
+def getMeanAndSDT(dataloader):
+    channels_sum, channels_squared_sum, num_batches = 0, 0, 0
+    for data, _ in dataloader:
+        # Mean over batch, height and width, but not over the channels
+        channels_sum += torch.mean(data, dim=[0, 2, 3])
+        channels_squared_sum += torch.mean(data**2, dim=[0, 2, 3])
+        num_batches += 1
+
+    mean = channels_sum / num_batches
+    std = (channels_squared_sum / num_batches - mean ** 2) ** 0.5
+
+    return mean, std
+
+
+def evaluateModelsOnDataset(datasetFolder, datasetInfo):
+    global modelsDir, inputSize
+
+    modelsEvals = []
+
+    # Get the images and calculate mean and standard deviation
+    imageDataset = torchvision.datasets.ImageFolder(
+        datasetFolder, transform=transforms.Compose([transforms.ToTensor()]))
+
+    for cls in imageDataset.classes:
+        cls_index = imageDataset.class_to_idx[cls]
+        num_cls = np.count_nonzero(
+            np.array(imageDataset.targets) == cls_index)
+
+        print("\t[🧮 # ELEMENTS] {}: {}".format(cls, num_cls))
+
+    imageDataloader = DataLoader(imageDataset, batch_size=128)
+
+    mean, std = getMeanAndSDT(imageDataloader)
+
+    # Setup for normalization
+    dataTransform = transforms.Compose([
+        transforms.Resize(inputSize),
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+    ])
+
+    testDataset = BalancedDataset(
+        datasetFolder, transform=dataTransform, use_cache=True, check_images=False)
+
+    setSeed(SEED)
+    testDataLoader = DataLoader(
+        testDataset, batch_size=64, shuffle=True, num_workers=0, pin_memory=True)
+
+    # Evaluate every model
+    for root, _, fnames in sorted(os.walk(modelsDir, followlinks=True)):
+        for fname in sorted(fnames):
+            path = os.path.join(root, fname)
+
+            try:
+                modelData = torch.load(path)
+            except:
+                continue
+
+            modelDataset = modelData["dataset"]
+            modelName = modelData["model_name"]
+            modelPercents = "/".join([str(x)
+                                     for x in modelData["balance"]])
+
+            print()
+            print("[🧮 EVALUATING] {} - {} {}".format(
+                modelDataset,
+                modelName,
+                modelPercents
+            ))
+
+            modelToTest = modelData["model"]
+            modelToTest = modelToTest.to(device, non_blocking=True)
+
+            scores = evaluateModel(modelToTest, testDataLoader)
+
+            modelsEvals.append({
+                "source_dataset": datasetInfo["dataset"],
+
+                "target_model": modelName,
+                "target_dataset": modelDataset,
+                "target_balancing": modelPercents,
+                "baseline_f1": scores["f1"],
+            })
+
+            print("\tAcc: {:.4f}".format(scores["acc"]))
+            print("\tPre: {:.4f}".format(scores["precision"]))
+            print("\tRec: {:.4f}".format(scores["recall"]))
+            print("\tF-Score: {:.4f}".format(scores["f1"]))
+
+            torch.cuda.empty_cache()
+
+    return modelsEvals
+
 
 ### ITERATING MODELS AND BALANCES ###
-set_seed(SEED)
+setSeed(SEED)
 
 for dataset_dir in sorted(dataset_dirs):
     for model_name in sorted(model_names):
@@ -344,7 +438,7 @@ for dataset_dir in sorted(dataset_dirs):
                         print("[🧮 # ELEMENTS] {}: {}".format(cls, num_cls))
 
                 # Create training and validation dataloaders
-                set_seed(SEED)
+                setSeed(SEED)
                 dataloaders_dict = {x: torch.utils.data.DataLoader(
                     image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=pin_memory) for x in ["train", "val"]}
 
@@ -370,7 +464,7 @@ for dataset_dir in sorted(dataset_dirs):
                 criterion = nn.CrossEntropyLoss()
 
                 # Train and evaluate
-                set_seed(SEED)
+                setSeed(SEED)
                 model_ft, scores_history = train_model(model_ft, dataloaders_dict, criterion, optimizer_ft,
                                                        num_epochs=num_epochs, is_inception=(
                                                            model_name == "inception"),
@@ -401,6 +495,7 @@ for dataset_dir in sorted(dataset_dirs):
 
 
 ### GEMERATING PREDICTIONS ###
+print("[🧠 GENERATING MODEL PREDICTIONS]")
 
 datasetsDir = "./datasets/" + currentTask
 modelsDir = "./models/" + currentTask
@@ -460,5 +555,34 @@ for dataset in sorted(getSubDirs(datasetsDir)):
                 )
 
 predictionsDF = pd.DataFrame(predictions)
-csv_save_path = './models/' + currentTask + 'predictions.csv'
+csv_save_path = './results/models/predictions/predictions_' + currentTask + '.csv'
 predictionsDF.to_csv(csv_save_path)
+
+
+
+print("[🧠 MODELS EVALUATION - BASELINE]")
+
+modelsEvals = []
+
+# Evaluate models on test folders
+for dataset in sorted(getSubDirs(datasetsDir)):
+    print("\n" + "-" * 15)
+    print("[🗃️ TEST DATASET] {}".format(dataset))
+
+    datasetDir = os.path.join(datasetsDir, dataset)
+    testDir = os.path.join(datasetDir, "test")
+
+    advDatasetInfo = {
+        "dataset": dataset,
+        "math": None,
+        "attack": None,
+        "balancing": None,
+        "model": None,
+    }
+
+    evals = evaluateModelsOnDataset(testDir, advDatasetInfo)
+    modelsEvals.extend(evals)
+
+ModelsEvalsDF = pd.DataFrame(modelsEvals)
+csv_save_path = './results/models/baseline/baseline_' + currentTask + '.csv'
+ModelsEvalsDF.to_csv(csv_save_path)
