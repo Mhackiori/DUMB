@@ -30,7 +30,7 @@ dataset_dirs = ["bing", "google"]  # Selecting sources for the images
 balances = [[50, 50], [40, 60], [30, 70], [20, 80]]
 
 # Models to train
-model_names = ["alexnet", "resnet" "vgg"]
+model_names = ["alexnet", "resnet", "vgg"]
 
 # OTHER PARAMETERS
 num_classes = 2  # Binary Classification
@@ -51,6 +51,8 @@ feature_extract = False
 
 learning_rate = 0.001  # The learning rate of the optimizer
 momentum = 0.9  # The momentum of the optimizer
+
+inputSize = 224
 
 ### HELPER FUNCTIONS ###
 
@@ -280,6 +282,48 @@ def evaluateModel(model, dataloader):
     return labelsOutputs
 
 
+def getScores(labels, predicted):
+    acc = torch.sum(predicted == labels) / len(predicted)
+
+    tp = (labels * predicted).sum()
+    tn = ((1 - labels) * (1 - predicted)).sum()
+    fp = ((1 - labels) * predicted).sum()
+    fn = (labels * (1 - predicted)).sum()
+
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+
+    f1 = 2 * (precision * recall) / (precision + recall)
+
+    return acc, precision, recall, f1
+
+
+def evaluateModelF1(model, dataloader):
+    model.eval()
+    labelsOutputs = torch.tensor([]).to(device, non_blocking=True)
+    labelsTargets = torch.tensor([]).to(device, non_blocking=True)
+
+    for inputs, labels in dataloader:
+        inputs = inputs.to(device, non_blocking=True)
+        labels = labels.to(device, non_blocking=True)
+
+        with torch.set_grad_enabled(False):
+            outputs = model(inputs)
+            _, preds = torch.max(outputs, 1)
+
+        labelsOutputs = torch.cat([labelsOutputs, preds], dim=0)
+        labelsTargets = torch.cat([labelsTargets, labels], dim=0)
+
+    acc, precision, recall, f1 = getScores(labelsTargets, labelsOutputs)
+
+    return {
+        "acc": acc.cpu().numpy(),
+        "precision": precision.cpu().numpy(),
+        "recall": recall.cpu().numpy(),
+        "f1": f1.cpu().numpy()
+    }
+
+
 def getMeanAndSDT(dataloader):
     channels_sum, channels_squared_sum, num_batches = 0, 0, 0
     for data, _ in dataloader:
@@ -353,15 +397,14 @@ def evaluateModelsOnDataset(datasetFolder, datasetInfo):
             modelToTest = modelData["model"]
             modelToTest = modelToTest.to(device, non_blocking=True)
 
-            scores = evaluateModel(modelToTest, testDataLoader)
+            scores = evaluateModelF1(modelToTest, testDataLoader)
 
             modelsEvals.append({
                 "source_dataset": datasetInfo["dataset"],
-
                 "target_model": modelName,
                 "target_dataset": modelDataset,
                 "target_balancing": modelPercents,
-                "baseline_f1": scores["f1"],
+                "baseline_f1": scores["f1"]
             })
 
             print("\tAcc: {:.4f}".format(scores["acc"]))
@@ -491,11 +534,13 @@ for dataset_dir in sorted(dataset_dirs):
 
                 print("[💾 SAVED]", dataset_dir, model_name,
                       "/".join(str(b) for b in balance))
-
+            else:
+                print('\t[✅ SKIPPING] ALREADY TRAINED')
 
 
 ### GEMERATING PREDICTIONS ###
-print("[🧠 GENERATING MODEL PREDICTIONS]")
+print("\n\n" + "-" * 50)
+print("\n[🧠 GENERATING MODEL PREDICTIONS]")
 
 datasetsDir = "./datasets/" + currentTask
 modelsDir = "./models/" + currentTask
@@ -504,7 +549,7 @@ predictions = []
 
 for dataset in sorted(getSubDirs(datasetsDir)):
     print("\n" + "-" * 15)
-    print("[🗃️ DATASET] {}".format(dataset))
+    print("[🗃️ DATASET] {}\n".format(dataset))
 
     datasetDir = os.path.join(datasetsDir, dataset)
     testDir = os.path.join(datasetDir, "test")
@@ -559,8 +604,8 @@ csv_save_path = './results/models/predictions/predictions_' + currentTask + '.cs
 predictionsDF.to_csv(csv_save_path)
 
 
-
-print("[🧠 MODELS EVALUATION - BASELINE]")
+print("\n\n" + "-" * 50)
+print("\n[🧠 MODELS EVALUATION - BASELINE]")
 
 modelsEvals = []
 

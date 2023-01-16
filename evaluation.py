@@ -333,10 +333,11 @@ for attack_name in attacks_names:
 
                 epss = list(df_atk['eps'])
                 asrs = list(df_atk['asr'])
+                ssims = list(df_atk['ssim'])
 
                 best = []
                 for j in range(len(epss)):
-                    best.append(epss[j] + asrs[j])
+                    best.append(asrs[j] + ssims[j])
 
                 maxx = max(best)
                 best_index = best.index(maxx)
