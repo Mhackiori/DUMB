@@ -36,6 +36,11 @@
       <ul>
         <li><a href="#modelTrainer">Model Trainer</a></li>
         <li><a href="#attackGeneration">Attacks Generation</a></li>
+        <ul>
+          <li><a href="#mathematical">Mathematical Attacks</a></li>
+          <li><a href="#nonmathematical">Non Mathematical Attacks</a></li>
+          <li><a href="#tuning">Parameter Tuning</a></li>
+        </ul>
         <li><a href="#evaluation">Evaluation</a></li>
       </ul>
     </li>
@@ -75,7 +80,7 @@ pip install -r requirements.txt
 
 You now need to add the datasets in the repository. You can do this by downloading the folder [here]() and dropping it in this repository.
 
-To replicate the results in our paper, you need to execute the scripts in a specific order, or you can execute them one aftern another by running:
+To replicate the results in our paper, you need to execute the scripts in a specific order, or you can execute them one after another by running:
 
 ```bash
 python3 modelTrainer.py && python3 attackGeneration.py && python3 evaluation.py
@@ -110,18 +115,41 @@ Once the 24 models are trained (2 datasets * 3 architectures * 4 dataset balanci
 
 With [`attackGeneration.py`](https://github.com/Mhackiori/Adversarial-Transferability/blob/main/attackGeneration.py) we are generating the attacks through the [Torchattacks](https://github.com/Harry24k/adversarial-attacks-pytorch) library and the [Pillow](https://pillow.readthedocs.io/en/stable/) library. Indeed, we divide the attacks in two main categories:
 
-* **Mathematical Attacks**: these are the adversarial attacks that is possible to find in the literature. In particular, they are:
+<div id="mathematical"></div>
 
-|              Name               | Paper                                                                                                                                                     |
-|:-------------------------------:|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-|       **BIM**<br />(Linf)       | Adversarial Examples in the Physical World ([Kurakin et al., 2016](https://arxiv.org/abs/1607.02533))                                                     |
-|     **DeepFool**<br />(L2)      | DeepFool: A Simple and Accurate Method to Fool Deep Neural Networks ([Moosavi-Dezfooli et al., 2016](https://arxiv.org/abs/1511.04599))                   |
-|      **FGSM**<br />(Linf)       | Explaining and harnessing adversarial examples ([Goodfellow et al., 2014](https://arxiv.org/abs/1412.6572))                                               |
-|       **PGD**<br />(Linf)       | Towards Deep Learning Models Resistant to Adversarial Attacks ([Mardry et al., 2017](https://arxiv.org/abs/1706.06083))                                   |
-|      **RFGSM**<br />(Linf)      | Ensemble Adversarial Traning: Attacks and Defences ([Tramèr et al., 2017](https://arxiv.org/abs/1705.07204))                                              |
-|     **TIFGSM**<br />(Linf)      | Evading Defenses to Transferable Adversarial Examples by Translation-Invariant Attacks ([Dong et al., 2019](https://arxiv.org/abs/1904.02884))            |
-* **Non Mathematical Attacks**: these are just visual modifications of the image obtained through filters or other means. In the next Figure a few examples are shown.
+#### **🔢 Mathematical Attacks**
+These are the adversarial attacks that is possible to find in the literature. In particular, we use: BIM, DeepFool, FGSM, PGD, RFGSM, and TIFGSM. In the next Table, we include their correspondent papers and the parameter that we use for fine-tuning the attack. We also show the range in which the parameter has been tested and the step for the search (see <a href="#tuning">Parameter Tuning</a>).
+
+| Name              | Paper                                                                                                                                          | Parameter  |
+|-------------------|------------------------------------------------------------------------------------------------------------------------------------------------|:----------:|
+| **BIM**<br />(Linf)    | Adversarial Examples in the Physical World ([Kurakin et al., 2016](https://arxiv.org/abs/1607.02533))                                          | $\epsilon \in [0.01, 0.3]$<br />@ 0.01 step |
+| **DeepFool**<br />(L2) | DeepFool: A Simple and Accurate Method to Fool Deep Neural Networks ([Moosavi-Dezfooli et al., 2016](https://arxiv.org/abs/1511.04599))        | Overshoot $\in [10, 100]$<br />@ 1 step |
+| **FGSM**<br />(Linf)   | Explaining and harnessing adversarial examples ([Goodfellow et al., 2014](https://arxiv.org/abs/1412.6572))                                    | $\epsilon \in [0.01, 0.3]$<br />@ 0.01 step |
+| **PGD**<br />(Linf)    | Towards Deep Learning Models Resistant to Adversarial Attacks ([Mardry et al., 2017](https://arxiv.org/abs/1706.06083))                        | $\epsilon \in [0.01, 0.3]$<br />@ 0.01 step |
+| **RFGSM**<br />(Linf)  | Ensemble Adversarial Traning: Attacks and Defences ([Tramèr et al., 2017](https://arxiv.org/abs/1705.07204))                                   | $\epsilon \in [0.01, 0.3]$<br />@ 0.01 step |
+| **TIFGSM**<br />(Linf) | Evading Defenses to Transferable Adversarial Examples by Translation-Invariant Attacks ([Dong et al., 2019](https://arxiv.org/abs/1904.02884)) | $\epsilon \in [0.01, 0.3]$<br />@ 0.01 step |
+
+<div id="nonmathematical"></div>
+
+#### **🎨 Non Mathematical Attacks**
+These are just visual modifications of the image obtained through filters or other means. A description of the individual attacks is provided in the next Table. If present, we also specify which parameter we use to define the level of perturbation added to the image.  We also show the range in which the parameter has been tested and the step for the search (see <a href="#tuning">Parameter Tuning</a>).
+
+| Name                         | Description                                                                                                                                                                                                                                                                                                                                         | Parameter   |
+|------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|
+| **Box Blur**                     | By applying this filter it is possible to blur the image by setting each pixel to the average value of the pixels in a square box extending radius pixels in each direction                                                                                                                                                                         | $r \in [0.5, 10]$<br />@ 0.5 step     |
+| **Gaussian Noise**               | A statistical noise having a probability density function equal to normal distribution                                                                                                                                                                                                                                                              | $\sigma \in [0.005, 0.1]$<br />@ 0.005 step$    |
+| **Grayscale Filter**             | To get a grayscale image, the color information from each RGB channel is removed, leaving only the luminance values. Grayscale images contain only shades of gray and no color because maximum luminance is white and zero luminance is black, so everything in between is a shade of gray                                                          | N.A.        |
+| **Invert Color**                 | An image negative is produced by subtracting each pixel from the maximum intensity value, so for color images, colors are replaced by their complementary colors                                                                                                                                                                                    | N.A.        |
+| **Random Black Box**             | We draw a black square in a random position inside the central portion of the image in order to cover some crucial information                                                                                                                                                                                                                      | Square size $\in [10, 200]$<br />@ 10 step |
+| **Salt and Pepper**              | An image can be altered by setting a certain amount of the pixels in the image either black or white. The effect is similar to sprinkling white and black dots-salt and pepper-ones in the image                                                                                                                                                    | Amount $\in [0.05, 0.1]$<br />@ 0.005 step     |
+| **Split and Merge RGB Channels** | This transformation concerns splitting an RGB image into individual channels, swapping them, and then combining them into a new image. In particular, we obtained the values of the RGB channels and then merged them using green values for the red channel, red values for the green channel, and using the original values for the blue channel. | N.A.        |
+
+In the next Figure we show an example for each of the non-mathematical attacks.
 ![Non Mathematical Attacks](https://i.postimg.cc/c1m5b4Tm/cat-Non-Math-Attacks.jpg "Non Mathematical Attacks")
+
+<div id="tuning"></div>
+
+#### **👾 Parameter Tuning**
 
 All mathematical attacks and most of non mathematical attacks include some kind of parameter $\epsilon$ that can be used to tune the level of perturbation added to the image. In order to find the best tradeoff between Attack Success Rate (ASR) and visual quality, we generate each attack with different $\epsilon$ values and save its ASR on the same model on which it has been generated and its Structural Similarity Index Measure (SSIM).
 
@@ -130,7 +158,13 @@ All mathematical attacks and most of non mathematical attacks include some kind 
 
 ### 📋 Evaluation
 
-After generating attacks at different $\epsilon$, we decide the best value for this parameter by maximizing the sum of the ASR and the SSIM. With [`evaluation.py`](https://github.com/Mhackiori/Adversarial-Transferability/blob/main/evaluation.py) we are evaluating all the adversarial samples that we generated on all the different models that we trained.
+After generating attacks at different $\epsilon$, we decide the best value for this parameter by maximizing the sum of the ASR and the SSIM. The optimization is given by the following equation:
+
+$\gamma = \arg \max_s \alpha \cdot \frac{1}{n}\sum_{i=1}^n f(x_i)\neq f(x_i^*) + \beta \cdot \frac{1}{n}\sum_{i=1}^n SSIM(x_i, x_i^*),$
+
+where $f$ is the model owned by the attacker and used during the optimization process, $x^*$ is the adversarial samples derived by $\mathcal{A}(f, x; s)$, and $\mathcal{A}$ is the adversarial procedure with parameter $s$. Therefore, $\gamma$ is a trade-off between ASR and SSIM. We set $\alpha$ and $\beta$ to 1 in our experiment to give the same importance to both factors.
+
+With [`evaluation.py`](https://github.com/Mhackiori/Adversarial-Transferability/blob/main/evaluation.py) we are evaluating all the adversarial samples that we generated on all the different models that we trained.
 
 <p align="right"><a href="#top">(back to top)</a></p>
 <div id="datasets"></div>

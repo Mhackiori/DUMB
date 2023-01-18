@@ -600,6 +600,8 @@ for dataset in sorted(getSubDirs(datasetsDir)):
                 )
 
 predictionsDF = pd.DataFrame(predictions)
+if not os.path.exists('./results/models/predictions/'):
+    os.makedirs('./results/models/predictions/')
 csv_save_path = './results/models/predictions/predictions_' + currentTask + '.csv'
 predictionsDF.to_csv(csv_save_path)
 
@@ -629,5 +631,7 @@ for dataset in sorted(getSubDirs(datasetsDir)):
     modelsEvals.extend(evals)
 
 ModelsEvalsDF = pd.DataFrame(modelsEvals)
+if not os.path.exists('./results/models/baseline/'):
+    os.makedirs('./results/models/baseline/')
 csv_save_path = './results/models/baseline/baseline_' + currentTask + '.csv'
 ModelsEvalsDF.to_csv(csv_save_path)

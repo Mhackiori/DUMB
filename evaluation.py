@@ -108,9 +108,26 @@ def getScores(labels, predicted):
 
     asr = torch.sum(predicted != labels) / len(predicted)
 
+    len_0 = 0
+    len_1 = 0
+    n_0 = 0
+    n_1 = 0
+    for pred, lab in zip(predicted, labels):
+        if int(lab) == 0:
+            len_0 += 1
+            if int(pred) == 1:
+                n_0 += 1
+        else:
+            len_1 += 1
+            if int(pred) == 0:
+                n_1 += 1
+
+    asr_0 = n_0/len_0
+    asr_1 = n_1/len_1
+
     f1 = 2 * (precision * recall) / (precision + recall)
 
-    return acc, precision, recall, f1, asr
+    return acc, precision, recall, f1, asr, asr_0, asr_1
 
 
 def evaluateModel(model, dataloader, dataset, modelInfo):
@@ -141,14 +158,8 @@ def evaluateModel(model, dataloader, dataset, modelInfo):
                 labelsOutputs.append(pred)
                 labelsTargets.append(label)
 
-    acc, precision, recall, f1, asr = getScores(
+    acc, precision, recall, f1, asr, asr_0, asr_1 = getScores(
         labelsTargets, labelsOutputs)
-
-    _, _, _, _, asr_0 = getScores(
-        labelsTargets[:datasetSize], labelsOutputs[:datasetSize])
-
-    _, _, _, _, asr_1 = getScores(
-        labelsTargets[datasetSize+1:], labelsOutputs[datasetSize+1:])
 
     return {
         "acc": acc.cpu().numpy(),
@@ -156,8 +167,8 @@ def evaluateModel(model, dataloader, dataset, modelInfo):
         "recall": recall.cpu().numpy(),
         "f1": f1.cpu().numpy(),
         "asr": asr.cpu().numpy(),
-        "asr_0": asr_0.cpu().numpy(),
-        "asr_1": asr_1.cpu().numpy()
+        "asr_0": asr_0,
+        "asr_1": asr_1
     }
 
 
@@ -185,19 +196,28 @@ def evaluateModelsOnDataset(datasetFolder, datasetInfo):
     ])
 
     testDataset = BalancedDataset(
-        datasetFolder, transform=dataTransform, use_cache=True, check_images=False)
+        datasetFolder, transform=dataTransform, use_cache=False, check_images=False, with_path=True)
 
     setSeed(SEED)
     testDataLoader = DataLoader(
         testDataset, batch_size=64, shuffle=True, num_workers=0, pin_memory=True)
+ 
 
     # Evaluate every model
     for root, _, fnames in sorted(os.walk(modelsDir, followlinks=True)):
         for fname in sorted(fnames):
-            path = os.path.join(root, fname)
+            # Putting testDataset here to keep paths
+            # testDataset = BalancedDataset(
+            #     datasetFolder, transform=dataTransform, use_cache=True, check_images=False, with_path=True)
+
+            # setSeed(SEED)
+            # testDataLoader = DataLoader(
+            #     testDataset, batch_size=64, shuffle=True, num_workers=0, pin_memory=True)
+            
+            modelPath = os.path.join(root, fname)
 
             try:
-                modelData = torch.load(path)
+                modelData = torch.load(modelPath)
             except:
                 continue
 
@@ -216,7 +236,7 @@ def evaluateModelsOnDataset(datasetFolder, datasetInfo):
             modelToTest = modelData["model"]
             modelToTest = modelToTest.to(device, non_blocking=True)
 
-            scores = evaluateModel(modelToTest, testDataLoader)
+            scores = evaluateModel(modelToTest, testDataLoader, modelDataset, modelData)
 
             modelsEvals.append({
                 "source_dataset": datasetInfo["dataset"],
@@ -265,6 +285,22 @@ attacks_names = [
     'TIFGSM'
 ]
 
+attacks_names_math = [
+    'BIM',
+    'DeepFool',
+    'FGSM',
+    'PGD',
+    'RFGSM',
+    'TIFGSM'
+]
+
+attack_names_static = [
+    'GreyScale',
+    'InvertColor',
+    'Sharpen',
+    'SplitMergeRGB'
+]
+
 print("[🧠 GENERATING BEST EPS FOR EACH ATTACK]\n")
 
 for attack_name in attacks_names:
@@ -278,9 +314,12 @@ for attack_name in attacks_names:
 
         datasetAdvDir = os.path.join(adversarialDir, dataset)
         mathAttacksDir = os.path.join(datasetAdvDir, "math")
+        nonMathAttacksDir = os.path.join(datasetAdvDir, "nonMath")
 
         if not os.path.exists(mathAttacksDir):
             os.makedirs(mathAttacksDir)
+        if not os.path.exists(nonMathAttacksDir):
+            os.makedirs(nonMathAttacksDir)
 
         toTensor = transforms.Compose([transforms.ToTensor()])
         toNormalizedTensor = transforms.Compose([
@@ -362,27 +401,62 @@ for attack_name in attacks_names:
 
                 for attack in attacks:
                     if attack == attack_name:
-                        attacker = attacks[attack]
+                        # Mathematical attacks
+                        if attack in attacks_names_math:
+                            attacker = attacks[attack]
 
-                        attackDir = os.path.join(
-                            mathAttacksDir, attack)
-                        saveDir = os.path.join(
-                            attackDir, modelName + "/" + modelPercents)
+                            attackDir = os.path.join(
+                                mathAttacksDir, attack)
+                            saveDir = os.path.join(
+                                attackDir, modelName + "/" + modelPercents)
 
-                        if not os.path.exists(saveDir):
-                            os.makedirs(saveDir)
+                            if not os.path.exists(saveDir):
+                                os.makedirs(saveDir)
 
-                        print("[⚔️  ADVERSARIAL] {} @ {} - {} - {} {}".format(
-                            attack,
-                            eps,
-                            modelDataset,
-                            modelName,
-                            modelPercents
-                        ))
+                            print("[⚔️  ADVERSARIAL] {} @ {} - {} - {} {}".format(
+                                attack,
+                                eps,
+                                modelDataset,
+                                modelName,
+                                modelPercents
+                            ))
 
-                        setSeed(SEED)
-                        saveMathAdversarials(
-                            originalTestDataLoader, originalTestDataset.classes, attacker, saveDir)
+                            setSeed(SEED)
+                            saveMathAdversarials(
+                                originalTestDataLoader, originalTestDataset.classes, attacker, saveDir)
+                        # Non mathematical attacks of which a parameter have been grid-searched
+                        elif attack not in attack_names_static:
+                            print("[⚔️  ADVERSARIAL] {} @ {} - {} - {} {}".format(
+                                attack,
+                                eps,
+                                modelDataset,
+                                modelName,
+                                modelPercents
+                            ))
+                            for path, cls in sorted(testDataset.imgs):
+                                clsName = testDataset.classes[cls]
+
+                                imageName = os.path.basename(path)
+
+                                image = Image.open(path).convert("RGB")
+
+                                attacker = attacks[attack]
+
+                                attackDir = os.path.join(
+                                    nonMathAttacksDir, attack)
+                                saveDir = os.path.join(attackDir, modelName)
+                                saveDir2 = os.path.join(saveDir, modelPercents)
+                                saveDir = os.path.join(saveDir2, clsName)
+
+                                if not os.path.exists(saveDir):
+                                    os.makedirs(saveDir)
+
+                                outImage = image.copy()
+                                outImage = attacker(outImage, amount=eps)
+                                outImage.save(os.path.join(
+                                    saveDir, imageName), "JPEG")
+
+                            print(f"\t[💾 IMAGES SAVED]")
 
 
 print("\n\n[🧠 ATTACKS EVALUATION]\n")
@@ -395,11 +469,17 @@ for attack in sorted(attacks_names):
     for dataset in sorted(getSubDirs(adversarialsDir)):
         datasetDir = os.path.join(adversarialsDir, dataset)
         mathAdvDir = os.path.join(datasetDir, "math")
+        nonMathAdvDir = os.path.join(datasetDir, "nonMath")
 
         if not os.path.exists(mathAdvDir):
             continue
 
-        attackDir = os.path.join(mathAdvDir, attack)
+        if attack in attacks_names_math:
+            attackDir = os.path.join(mathAdvDir, attack)
+            isMath = True
+        else:
+            attackDir = os.path.join(nonMathAdvDir, attack)
+            isMath = False
 
         for advModel in sorted(getSubDirs(attackDir)):
             advModelDir = os.path.join(attackDir, advModel)
@@ -413,7 +493,7 @@ for attack in sorted(attacks_names):
 
                 advDatasetInfo = {
                     "dataset": dataset,
-                    "math": True,
+                    "math": isMath,
                     "attack": attack,
                     "balancing": advBalancing.replace("_", "/"),
                     "model": advModel,
@@ -422,6 +502,8 @@ for attack in sorted(attacks_names):
                 evals = evaluateModelsOnDataset(advDatasetDir, advDatasetInfo)
                 modelsEvals.extend(evals)
 
-                ModelsEvalsDF = pd.DataFrame(modelsEvals)
-                csv_path_name = '.results/attacks/evaluation/' + currentTask + '/evaluations_' + attack + '.csv'
-                ModelsEvalsDF.to_csv(csv_path_name)
+    ModelsEvalsDF = pd.DataFrame(modelsEvals)
+    if not os.path.exists('./results/attacks/evaluation/' + currentTask + '/'):
+        os.makedirs('./results/attacks/evaluation/' + currentTask + '/')
+    csv_path_name = './results/attacks/evaluation/' + currentTask + '/evaluations_' + attack + '.csv'
+    ModelsEvalsDF.to_csv(csv_path_name)

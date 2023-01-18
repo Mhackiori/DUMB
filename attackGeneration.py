@@ -97,7 +97,8 @@ attack_names_non_math = [
     "GreyScale",
     "SplitMergeRGB",
     "SaltPepper",
-    "RandomBlackBox"]
+    "RandomBlackBox"
+]
 
 
 # Parameters
@@ -189,9 +190,26 @@ def getScores(labels, predicted):
 
     asr = torch.sum(predicted != labels) / len(predicted)
 
+    len_0 = 0
+    len_1 = 0
+    n_0 = 0
+    n_1 = 0
+    for pred, lab in zip(predicted, labels):
+        if int(lab) == 0:
+            len_0 += 1
+            if int(pred) == 1:
+                n_0 += 1
+        else:
+            len_1 += 1
+            if int(pred) == 0:
+                n_1 += 1
+
+    asr_0 = n_0/len_0
+    asr_1 = n_1/len_1
+
     f1 = 2 * (precision * recall) / (precision + recall)
 
-    return acc, precision, recall, f1, asr
+    return acc, precision, recall, f1, asr, asr_0, asr_1
 
 
 def evaluateModel(model, dataloader, dataset, modelInfo):
@@ -222,14 +240,8 @@ def evaluateModel(model, dataloader, dataset, modelInfo):
                 labelsOutputs.append(pred)
                 labelsTargets.append(label)
 
-    acc, precision, recall, f1, asr = getScores(
+    acc, precision, recall, f1, asr, asr_0, asr_1 = getScores(
         labelsTargets, labelsOutputs)
-
-    _, _, _, _, asr_0 = getScores(
-        labelsTargets[:datasetSize], labelsOutputs[:datasetSize])
-
-    _, _, _, _, asr_1 = getScores(
-        labelsTargets[datasetSize+1:], labelsOutputs[datasetSize+1:])
 
     return {
         "acc": acc.cpu().numpy(),
@@ -237,8 +249,8 @@ def evaluateModel(model, dataloader, dataset, modelInfo):
         "recall": recall.cpu().numpy(),
         "f1": f1.cpu().numpy(),
         "asr": asr.cpu().numpy(),
-        "asr_0": asr_0.cpu().numpy(),
-        "asr_1": asr_1.cpu().numpy()
+        "asr_0": asr_0,
+        "asr_1": asr_1
     }
 
 
@@ -414,8 +426,8 @@ for attack_name in attacks_names_math:
 
                             torch.cuda.empty_cache()
 
-                            data_df = pd.DataFrame(csv_data)
-                            data_df.to_csv('./results/attacks/history/' + currentTask + '/' + attack + '.csv')
+    data_df = pd.DataFrame(csv_data)
+    data_df.to_csv('./results/attacks/history/' + currentTask + '/' + attack + '.csv')
 
 
 print("\n\n[🧠 NON-MATH ATTACK GENERATION]\n")
@@ -503,7 +515,6 @@ for attack_name in attack_names_non_math:
                                 modelName,
                                 modelPercents
                             ))
-                            saved = 0
                             for path, cls in sorted(testDataset.imgs):
                                 clsName = testDataset.classes[cls]
 
@@ -530,19 +541,6 @@ for attack_name in attack_names_non_math:
                                     effective = True
                                 outImage.save(os.path.join(
                                     saveDir, imageName), "JPEG")
-                                saved += 1
-                                tmpDir = saveDir.replace(
-                                    saveDir.split('/')[1], 'tmp')
-                                eps_string = 'eps_' + str(eps)
-                                path2 = os.path.join(tmpDir, eps_string)
-                                path2 = os.path.join(path2, clsName)
-
-                                if not os.path.exists(path2):
-                                    os.makedirs(path2)
-
-                                if (saved > 0 and saved <= 5) or (saved > datasetSize and saved <= datasetSize + 5):
-                                    outImage.save(os.path.join(
-                                        path2, imageName), "JPEG")
 
                             print(f"\t[💾 IMAGES SAVED]")
 
@@ -618,5 +616,7 @@ for attack_name in attack_names_non_math:
 
                             torch.cuda.empty_cache()
 
-                            data_df = pd.DataFrame(csv_data)
-                            data_df.to_csv('./results/attacks/history/' + currentTask + '/' + attack + '.csv')
+    data_df = pd.DataFrame(csv_data)
+    if not os.path.exists('./results/attacks/history/' + currentTask + '/'):
+        os.makedirs('./results/attacks/history/' + currentTask + '/')
+    data_df.to_csv('./results/attacks/history/' + currentTask + '/' + attack + '.csv')
