@@ -52,21 +52,10 @@ def getScores(labels, predicted, complete=True):
             if int(pred) == 0:
                 n_1 += 1
 
-    asr_0 = n_0/len_0
-    asr_1 = n_1/len_1
+    asr_0 = n_0 / len_0
+    asr_1 = n_1 / len_1
 
     return acc, precision, recall, f1, asr, asr_0, asr_1
-
-
-def getBestScores(hist, key, min=False):
-    scores = [x[key] for x in hist]
-
-    if min:
-        i = np.argmin(np.array(scores))
-    else:
-        i = np.argmax(np.array(scores))
-
-    return hist[i], i
 
 
 def evaluateModel(model, dataloader, dataset, modelInfo, dfMath):
@@ -98,7 +87,7 @@ def evaluateModel(model, dataloader, dataset, modelInfo, dfMath):
                 labelsTargets.append(label)
 
     acc, precision, recall, f1, asr, asr_0, asr_1 = getScores(
-        labelsTargets, labelsOutputs, DEVICE)
+        labelsTargets, labelsOutputs)
 
     return {
         "acc": acc.cpu().numpy(),
