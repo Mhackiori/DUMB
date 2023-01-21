@@ -12,173 +12,33 @@ from torchvision import transforms
 from utils.balancedDataset import BalancedDataset
 from utils.nonMathAttacks import NonMathAttacks
 from utils.tasks import currentTask
-
-
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+from utils.helperFunctions import *
+from utils.const import *
 
 # Parameters
 
-nonMathAttacks = NonMathAttacks()
+NON_MATH_ATTACKS = NonMathAttacks()
 
-datasetToFolder = {"bing": "bing", "google": "google"}
-
-shuffleDataset = False  # Shuffle the dataset
-
-inputSize = 224  # Specified for alexnet, resnet, vgg
-datasetSize = 150  # Reduce the size of the dataset
+SHUFFLE_DATASET = False  # Shuffle the dataset
 
 # Parameters for best eps estimation
-alpha = 0.6
-beta = 1 - alpha
+ALPHA = 0.6
+BETA = 1 - ALPHA
 
-adversarialDir = "./adversarialSamples/" + currentTask
+if not os.path.exists(os.path.join(os.getcwd(), ADVERSARIAL_DIR)):
+    os.makedirs(os.path.join(os.getcwd(), ADVERSARIAL_DIR))
 
-if not os.path.exists(os.path.join(os.getcwd(), adversarialDir)):
-    os.makedirs(os.path.join(os.getcwd(), adversarialDir))
-
-datasetsDir = "./datasets/" + currentTask
-modelsDir = "./models/" + currentTask
-adversarialsDir = "./adversarialSamples/" + currentTask
-
-modelPredictions_path = './results/models/predictions/predictions_' + currentTask + '.csv'
-dfMath = pd.read_csv(modelPredictions_path, index_col=[
+dfMath = pd.read_csv(MODEL_PREDICTIONS_PATH, index_col=[
                      "task", "model", "model_dataset", "balance", "dataset"]).sort_index()
 
 # Setting seed for reproducibility
 
-SEED = 151836
-
-
-def setSeed(seed):
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    np.random.seed(seed)
-
-
-setSeed(SEED)
+setSeed()
 
 # Helper functions
 
 
-def getSubDirs(dir):
-    return [x for x in os.listdir(dir) if os.path.isdir(os.path.join(dir, x))]
-
-
-def saveMathAdversarials(dataloader, classes, attack, saveDir):
-    saved = 0
-
-    for images, labels, paths in dataloader:
-        adversarials = attack(images, labels)
-
-        for adversarial, label, fName in zip(adversarials, labels, paths):
-            image = transforms.ToPILImage()(adversarial).convert("RGB")
-            path = os.path.join(saveDir, classes[label])
-
-            if not os.path.exists(path):
-                os.makedirs(path)
-
-            imageName = os.path.basename(fName)
-            image.save(os.path.join(path, imageName), "JPEG")
-            saved += 1
-
-            if saved % 20 == 0:
-                print(f"\t[💾 SAVED] #{saved} images")
-
-
-def getBestScores(hist, key, min=False):
-    scores = [x[key] for x in hist]
-
-    if min:
-        i = np.argmin(np.array(scores))
-    else:
-        i = np.argmax(np.array(scores))
-
-    return hist[i], i
-
-
-def getScores(labels, predicted):
-    labels = torch.tensor(labels).to(device, non_blocking=True)
-    predicted = torch.tensor(predicted).to(device, non_blocking=True)
-
-    acc = torch.sum(predicted == labels) / len(predicted)
-
-    tp = (labels * predicted).sum()
-    fp = ((1 - labels) * predicted).sum()
-    fn = (labels * (1 - predicted)).sum()
-
-    precision = tp / (tp + fp)
-    recall = tp / (tp + fn)
-
-    asr = torch.sum(predicted != labels) / len(predicted)
-
-    len_0 = 0
-    len_1 = 0
-    n_0 = 0
-    n_1 = 0
-    for pred, lab in zip(predicted, labels):
-        if int(lab) == 0:
-            len_0 += 1
-            if int(pred) == 1:
-                n_0 += 1
-        else:
-            len_1 += 1
-            if int(pred) == 0:
-                n_1 += 1
-
-    asr_0 = n_0/len_0
-    asr_1 = n_1/len_1
-
-    f1 = 2 * (precision * recall) / (precision + recall)
-
-    return acc, precision, recall, f1, asr, asr_0, asr_1
-
-
-def evaluateModel(model, dataloader, dataset, modelInfo):
-    balance = "/".join([str(x) for x in modelInfo["balance"]])
-    missclassified = dfMath.loc[currentTask,
-                                modelInfo["model_name"],
-                                modelInfo["dataset"],
-                                balance,
-                                dataset]
-    missclassified = missclassified[missclassified["label"]
-                                    != missclassified["prediction"]]
-    missclassified = np.array(missclassified["name"])
-
-    model.eval()
-    labelsOutputs = []
-    labelsTargets = []
-
-    for inputs, labels, paths in dataloader:
-        inputs = inputs.to(device, non_blocking=True)
-        labels = labels.to(device, non_blocking=True)
-
-        with torch.set_grad_enabled(False):
-            outputs = model(inputs)
-            _, preds = torch.max(outputs, 1)
-
-        for pred, label, path in zip(preds, labels, paths):
-            if os.path.basename(path) not in missclassified:
-                labelsOutputs.append(pred)
-                labelsTargets.append(label)
-
-    acc, precision, recall, f1, asr, asr_0, asr_1 = getScores(
-        labelsTargets, labelsOutputs)
-
-    return {
-        "acc": acc.cpu().numpy(),
-        "precision": precision.cpu().numpy(),
-        "recall": recall.cpu().numpy(),
-        "f1": f1.cpu().numpy(),
-        "asr": asr.cpu().numpy(),
-        "asr_0": asr_0,
-        "asr_1": asr_1
-    }
-
-
 def evaluateModelsOnDataset(datasetFolder, datasetInfo):
-    global modelsDir, inputSize
-
     modelsEvals = []
 
     # Get the images and calculate mean and standard deviation
@@ -194,30 +54,29 @@ def evaluateModelsOnDataset(datasetFolder, datasetInfo):
 
     # Setup for normalization
     dataTransform = transforms.Compose([
-        transforms.Resize(inputSize),
+        transforms.Resize(INPUT_SIZE),
         transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        transforms.Normalize(NORMALIZATION_PARAMS)
     ])
 
     testDataset = BalancedDataset(
         datasetFolder, transform=dataTransform, use_cache=False, check_images=False, with_path=True)
 
-    setSeed(SEED)
+    setSeed()
     testDataLoader = DataLoader(
         testDataset, batch_size=64, shuffle=True, num_workers=0, pin_memory=True)
- 
 
     # Evaluate every model
-    for root, _, fnames in sorted(os.walk(modelsDir, followlinks=True)):
+    for root, _, fnames in sorted(os.walk(MODELS_DIR, followlinks=True)):
         for fname in sorted(fnames):
             # Putting testDataset here to keep paths
             # testDataset = BalancedDataset(
             #     datasetFolder, transform=dataTransform, use_cache=True, check_images=False, with_path=True)
 
-            # setSeed(SEED)
+            # setSeed()
             # testDataLoader = DataLoader(
             #     testDataset, batch_size=64, shuffle=True, num_workers=0, pin_memory=True)
-            
+
             modelPath = os.path.join(root, fname)
 
             try:
@@ -238,9 +97,10 @@ def evaluateModelsOnDataset(datasetFolder, datasetInfo):
             ))
 
             modelToTest = modelData["model"]
-            modelToTest = modelToTest.to(device, non_blocking=True)
+            modelToTest = modelToTest.to(DEVICE, non_blocking=True)
 
-            scores = evaluateModel(modelToTest, testDataLoader, modelDataset, modelData)
+            scores = evaluateModel(
+                modelToTest, testDataLoader, modelDataset, modelData, dfMath)
 
             modelsEvals.append({
                 "source_dataset": datasetInfo["dataset"],
@@ -268,7 +128,7 @@ def evaluateModelsOnDataset(datasetFolder, datasetInfo):
 
 modelsEvals = []
 
-datasetsToGenerate = getSubDirs(datasetsDir)
+datasetsToGenerate = getSubDirs(DATASETS_DIR)
 
 i = 0
 
@@ -313,10 +173,10 @@ for attack_name in attacks_names:
         print("\n" + "-" * 15)
         print("[🗃️  SOURCE DATASET] {}\n".format(dataset))
 
-        datasetDir = os.path.join(datasetsDir, dataset)
+        datasetDir = os.path.join(DATASETS_DIR, dataset)
         testDir = os.path.join(datasetDir, "test")
 
-        datasetAdvDir = os.path.join(adversarialDir, dataset)
+        datasetAdvDir = os.path.join(ADVERSARIAL_DIR, dataset)
         mathAttacksDir = os.path.join(datasetAdvDir, "math")
         nonMathAttacksDir = os.path.join(datasetAdvDir, "nonMath")
 
@@ -327,12 +187,12 @@ for attack_name in attacks_names:
 
         toTensor = transforms.Compose([transforms.ToTensor()])
         toNormalizedTensor = transforms.Compose([
-            transforms.Resize(inputSize),
+            transforms.Resize(INPUT_SIZE),
             transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            transforms.Normalize(NORMALIZATION_PARAMS)
         ])
 
-        for root, _, fnames in sorted(os.walk(os.path.join(modelsDir, datasetToFolder[dataset]), followlinks=True)):
+        for root, _, fnames in sorted(os.walk(os.path.join(MODELS_DIR, dataset), followlinks=True)):
             for fname in sorted(fnames):
                 effective = False
                 asr_history = []
@@ -348,27 +208,27 @@ for attack_name in attacks_names:
 
                 modelPercents = "_".join([str(x)
                                          for x in modelData["balance"]])
-                model = modelData["model"].to(device)
+                model = modelData["model"].to(DEVICE)
 
                 # Test dataset without normalization (for generating samples)
                 originalTestDataset = BalancedDataset(
-                    testDir, transform=toTensor, datasetSize=datasetSize, use_cache=False, check_images=False, with_path=True)
+                    testDir, transform=toTensor, datasetSize=DATASET_SIZE, use_cache=False, check_images=False, with_path=True)
 
-                setSeed(SEED)
+                setSeed()
                 originalTestDataLoader = DataLoader(
-                    originalTestDataset, batch_size=16, num_workers=0, shuffle=shuffleDataset)
+                    originalTestDataset, batch_size=16, num_workers=0, shuffle=SHUFFLE_DATASET)
 
                 # Test dataset with normalization (for evaluation)
                 testDataset = BalancedDataset(
-                    testDir, transform=toNormalizedTensor, datasetSize=datasetSize, use_cache=False, check_images=False, with_path=True)
+                    testDir, transform=toNormalizedTensor, datasetSize=DATASET_SIZE, use_cache=False, check_images=False, with_path=True)
 
-                setSeed(SEED)
+                setSeed()
                 testDataLoader = DataLoader(
-                    testDataset, batch_size=16, num_workers=0, shuffle=shuffleDataset)
+                    testDataset, batch_size=16, num_workers=0, shuffle=SHUFFLE_DATASET)
 
                 # Loading best epsilon value for this model
-                csv_path = './results/attacks/history/' + currentTask + '/' + attack_name + '.csv'
-                best_df = pd.read_csv(csv_path, index_col='Unnamed: 0')
+                best_df = pd.read_csv(os.path.join(
+                    HISTORY_DIR, attack_name + '.csv'), index_col='Unnamed: 0')
 
                 df_atk = best_df[best_df['model'] == modelName]
                 df_atk = df_atk[df_atk['dataset'] == modelDataset]
@@ -380,7 +240,7 @@ for attack_name in attacks_names:
 
                 best = []
                 for j in range(len(epss)):
-                    best.append((alpha*asrs[j]) + (beta*ssims[j]))
+                    best.append((ALPHA * asrs[j]) + (BETA * ssims[j]))
 
                 maxx = max(best)
                 best_index = best.index(maxx)
@@ -388,18 +248,18 @@ for attack_name in attacks_names:
 
                 attacks = {
                     "BIM": BIM(model, eps=eps),
-                    "BoxBlur": nonMathAttacks.boxBlur,
+                    "BoxBlur": NON_MATH_ATTACKS.boxBlur,
                     "FGSM": FGSM(model, eps=eps),
-                    "GaussianNoise": nonMathAttacks.gaussianNoise,
-                    "GreyScale": nonMathAttacks.greyscale,
-                    "InvertColor": nonMathAttacks.invertColor,
+                    "GaussianNoise": NON_MATH_ATTACKS.gaussianNoise,
+                    "GreyScale": NON_MATH_ATTACKS.greyscale,
+                    "InvertColor": NON_MATH_ATTACKS.invertColor,
                     "DeepFool": DeepFool(model, overshoot=eps),
                     "PGD": PGD(model, eps=eps),
-                    "RandomBlackBox": nonMathAttacks.randomBlackBox,
+                    "RandomBlackBox": NON_MATH_ATTACKS.randomBlackBox,
                     "RFGSM": RFGSM(model, eps=eps),
-                    "SaltPepper": nonMathAttacks.saltAndPepper,
-                    "Sharpen": nonMathAttacks.sharpen,
-                    "SplitMergeRGB": nonMathAttacks.splitMergeRGB,
+                    "SaltPepper": NON_MATH_ATTACKS.saltAndPepper,
+                    "Sharpen": NON_MATH_ATTACKS.sharpen,
+                    "SplitMergeRGB": NON_MATH_ATTACKS.splitMergeRGB,
                     "TIFGSM": TIFGSM(model, eps=eps)
                 }
 
@@ -425,7 +285,7 @@ for attack_name in attacks_names:
                                 modelPercents
                             ))
 
-                            setSeed(SEED)
+                            setSeed()
                             saveMathAdversarials(
                                 originalTestDataLoader, originalTestDataset.classes, attacker, saveDir)
                         # Non mathematical attacks of which a parameter have been grid-searched
@@ -470,8 +330,8 @@ modelsEvals = []
 for attack in sorted(attacks_names):
     modelsEvals = []
     # Evaluate models on math attacks folders
-    for dataset in sorted(getSubDirs(adversarialsDir)):
-        datasetDir = os.path.join(adversarialsDir, dataset)
+    for dataset in sorted(getSubDirs(ADVERSARIAL_DIR)):
+        datasetDir = os.path.join(ADVERSARIAL_DIR, dataset)
         mathAdvDir = os.path.join(datasetDir, "math")
         nonMathAdvDir = os.path.join(datasetDir, "nonMath")
 
@@ -506,8 +366,10 @@ for attack in sorted(attacks_names):
                 evals = evaluateModelsOnDataset(advDatasetDir, advDatasetInfo)
                 modelsEvals.extend(evals)
 
-    ModelsEvalsDF = pd.DataFrame(modelsEvals)
-    if not os.path.exists('./results/attacks/evaluation/' + currentTask + '/'):
-        os.makedirs('./results/attacks/evaluation/' + currentTask + '/')
-    csv_path_name = './results/attacks/evaluation/' + currentTask + '/evaluations_' + attack + '.csv'
-    ModelsEvalsDF.to_csv(csv_path_name)
+    modelsEvalsDF = pd.DataFrame(modelsEvals)
+
+    if not os.path.exists(EVALUATIONS_DIR):
+        os.makedirs(EVALUATIONS_DIR)
+
+    modelsEvalsDF.to_csv(os.path.join(
+        EVALUATIONS_DIR, 'evaluations_' + attack + '.csv'))

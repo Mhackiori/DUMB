@@ -151,6 +151,9 @@ class BalancedDataset(ImageFolder):
         path, _ = self.samples[index]
 
         if self.use_cache and path in self.cached_data.keys():
+            if self.with_path:
+                return self.cached_data[path], path
+            
             return self.cached_data[path]
 
         sample, target = super().__getitem__(index)
