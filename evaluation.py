@@ -27,6 +27,10 @@ shuffleDataset = False  # Shuffle the dataset
 inputSize = 224  # Specified for alexnet, resnet, vgg
 datasetSize = 150  # Reduce the size of the dataset
 
+# Parameters for best eps estimation
+alpha = 0.6
+beta = 1 - alpha
+
 adversarialDir = "./adversarialSamples/" + currentTask
 
 if not os.path.exists(os.path.join(os.getcwd(), adversarialDir)):
@@ -376,7 +380,7 @@ for attack_name in attacks_names:
 
                 best = []
                 for j in range(len(epss)):
-                    best.append(asrs[j] + ssims[j])
+                    best.append((alpha*asrs[j]) + (beta*ssims[j]))
 
                 maxx = max(best)
                 best_index = best.index(maxx)

@@ -1,8 +1,8 @@
 ,source_dataset,target_model,target_dataset,target_balancing,baseline_f1
-0,bing,alexnet,bing,20/80,0.9871159
-1,bing,alexnet,bing,30/70,0.98745614
-2,bing,alexnet,bing,40/60,0.9843355
-3,bing,alexnet,bing,50/50,0.9843197
+0,bing,alexnet,bing,20/80,0.98760533
+1,bing,alexnet,bing,30/70,0.9870389
+2,bing,alexnet,bing,40/60,0.98382205
+3,bing,alexnet,bing,50/50,0.9837893
 4,bing,resnet,bing,20/80,0.9900596
 5,bing,resnet,bing,30/70,0.991018
 6,bing,resnet,bing,40/60,0.9924962
@@ -12,8 +12,8 @@
 10,bing,vgg,bing,40/60,0.99102694
 11,bing,vgg,bing,50/50,0.993
 12,bing,alexnet,google,20/80,0.9820896
-13,bing,alexnet,google,30/70,0.98094285
-14,bing,alexnet,google,40/60,0.98347515
+13,bing,alexnet,google,30/70,0.9814536
+14,bing,alexnet,google,40/60,0.9797571
 15,bing,alexnet,google,50/50,0.9843671
 16,bing,resnet,google,20/80,0.9871032
 17,bing,resnet,google,30/70,0.98905474
@@ -24,7 +24,7 @@
 22,bing,vgg,google,40/60,0.98952615
 23,bing,vgg,google,50/50,0.99150425
 24,google,alexnet,bing,20/80,0.9689196
-25,google,alexnet,bing,30/70,0.96024156
+25,google,alexnet,bing,30/70,0.9628897
 26,google,alexnet,bing,40/60,0.96322775
 27,google,alexnet,bing,50/50,0.9607843
 28,google,resnet,bing,20/80,0.97455966
@@ -35,9 +35,9 @@
 33,google,vgg,bing,30/70,0.9775561
 34,google,vgg,bing,40/60,0.9784461
 35,google,vgg,bing,50/50,0.9813226
-36,google,alexnet,google,20/80,0.96432114
-37,google,alexnet,google,30/70,0.9697581
-38,google,alexnet,google,40/60,0.97329974
+36,google,alexnet,google,20/80,0.9638435
+37,google,alexnet,google,30/70,0.9692385
+38,google,alexnet,google,40/60,0.96747977
 39,google,alexnet,google,50/50,0.9688617
 40,google,resnet,google,20/80,0.9750855
 41,google,resnet,google,30/70,0.9842209

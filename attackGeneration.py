@@ -427,7 +427,8 @@ for attack_name in attacks_names_math:
                             torch.cuda.empty_cache()
 
     data_df = pd.DataFrame(csv_data)
-    data_df.to_csv('./results/attacks/history/' + currentTask + '/' + attack + '.csv')
+    data_df.to_csv('./results/attacks/history/' +
+                   currentTask + '/' + attack_name + '.csv')
 
 
 print("\n\n[🧠 NON-MATH ATTACK GENERATION]\n")
@@ -619,4 +620,5 @@ for attack_name in attack_names_non_math:
     data_df = pd.DataFrame(csv_data)
     if not os.path.exists('./results/attacks/history/' + currentTask + '/'):
         os.makedirs('./results/attacks/history/' + currentTask + '/')
-    data_df.to_csv('./results/attacks/history/' + currentTask + '/' + attack + '.csv')
+    data_df.to_csv('./results/attacks/history/' +
+                   currentTask + '/' + attack_name + '.csv')
