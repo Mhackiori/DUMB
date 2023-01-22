@@ -12,9 +12,9 @@ from torch.utils.data import DataLoader
 from torchvision import models, transforms
 
 from utils.balancedDataset import BalancedDataset
-from utils.tasks import currentTask
 from utils.const import *
 from utils.helperFunctions import setSeed, getScores, getSubDirs
+from utils.tasks import currentTask
 
 # ITERABLE PARAMETERS
 
@@ -264,7 +264,7 @@ def evaluateModelsOnDataset(datasetFolder, datasetInfo):
     dataTransform = transforms.Compose([
         transforms.Resize(INPUT_SIZE),
         transforms.ToTensor(),
-        transforms.Normalize(NORMALIZATION_PARAMS)
+        transforms.Normalize(NORMALIZATION_PARAMS[0], NORMALIZATION_PARAMS[1])
     ])
 
     testDataset = BalancedDataset(
@@ -355,12 +355,12 @@ for dataset_dir in sorted(getSubDirs(DATASETS_DIR)):
                 "train": transforms.Compose([
                     transforms.Resize(input_size),
                     transforms.ToTensor(),
-                    transforms.Normalize(NORMALIZATION_PARAMS)
+                    transforms.Normalize(NORMALIZATION_PARAMS[0], NORMALIZATION_PARAMS[1])
                 ]),
                 "val": transforms.Compose([
                     transforms.Resize(input_size),
                     transforms.ToTensor(),
-                    transforms.Normalize(NORMALIZATION_PARAMS)
+                    transforms.Normalize(NORMALIZATION_PARAMS[0], NORMALIZATION_PARAMS[1])
                 ]),
             }
 
@@ -451,7 +451,7 @@ for dataset in sorted(getSubDirs(DATASETS_DIR)):
     toTensor = transforms.Compose([
         transforms.Resize(input_size),
         transforms.ToTensor(),
-        transforms.Normalize(NORMALIZATION_PARAMS)
+        transforms.Normalize(NORMALIZATION_PARAMS[0], NORMALIZATION_PARAMS[1])
     ])
 
     testDataset = BalancedDataset(

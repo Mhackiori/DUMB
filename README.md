@@ -2,7 +2,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/luca-martinelli-09/learn-the-art">
+  <a href="https://github.com/Mhackiori/Adversarial-Transferability">
     <img src="https://i.postimg.cc/P5m5r2sX/cat-no-bg.png" alt="Logo" width="150" height="150">
   </a>
 
@@ -16,11 +16,11 @@
     ·
     <a href="https://www.math.unipd.it/~conti/">Mauro Conti</a>
     ·
-    <a href="https://github.com/Mhackiori">Francesco Marchiori</a>
+    <a href="https://www.math.unipd.it/~fmarchio/">Francesco Marchiori</a>
     ·
-    <a href="https://github.com/luca-martinelli-09">Luca Martinelli</a>
+    <a href="https://lucamartinelli.eu.org/">Luca Martinelli</a>
     ·
-    <a href="https://github.com/pajola">Luca Pajola</a>
+    <a href="https://sites.google.com/view/lucapajola/home">Luca Pajola</a>
   </p>
 </div>
 
@@ -137,7 +137,7 @@ These are just visual modifications of the image obtained through filters or oth
 | Name                         | Description                                                                                                                                                                                                                                                                                                                                         | Parameter   |
 |------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------:|
 | **Box Blur**                     | By applying this filter it is possible to blur the image by setting each pixel to the average value of the pixels in a square box extending radius pixels in each direction                                                                                                                                                                         | $r \in [0.5, 10]$<br />@ 0.5 step     |
-| **Gaussian Noise**               | A statistical noise having a probability density function equal to normal distribution                                                                                                                                                                                                                                                              | $\sigma \in [0.005, 0.1]$<br />@ 0.005 step$    |
+| **Gaussian Noise**               | A statistical noise having a probability density function equal to normal distribution                                                                                                                                                                                                                                                              | $\sigma \in [0.005, 0.1]$<br />@ 0.005 step    |
 | **Grayscale Filter**             | To get a grayscale image, the color information from each RGB channel is removed, leaving only the luminance values. Grayscale images contain only shades of gray and no color because maximum luminance is white and zero luminance is black, so everything in between is a shade of gray                                                          | N.A.        |
 | **Invert Color**                 | An image negative is produced by subtracting each pixel from the maximum intensity value, so for color images, colors are replaced by their complementary colors                                                                                                                                                                                    | N.A.        |
 | **Random Black Box**             | We draw a black square in a random position inside the central portion of the image in order to cover some crucial information                                                                                                                                                                                                                      | Square size $\in [10, 200]$<br />@ 10 step |
@@ -160,9 +160,9 @@ All mathematical attacks and most of non mathematical attacks include some kind 
 
 After generating attacks at different $\epsilon$, we decide the best value for this parameter by maximizing the sum of the ASR and the SSIM. The optimization is given by the following equation:
 
-$$\gamma = \arg \max_s \alpha \cdot \frac{1}{n}\sum_{i=1}^n f(x_i)\neq f(x_i^*) + \beta \cdot \frac{1}{n}\sum_{i=1}^n SSIM(x_i, x_i^*),$$
+$$\gamma = \arg \max_s \alpha \cdot \frac{1}{n}\sum_{i=1}^n f(x_i)\neq f(x_i^a) + \beta \cdot \frac{1}{n}\sum_{i=1}^n SSIM(x_i, x_i^a),$$
 
-where $f$ is the model owned by the attacker and used during the optimization process, $x^*$ is the adversarial samples derived by $\mathcal{A}(f, x; s)$, and $\mathcal{A}$ is the adversarial procedure with parameter $s$. Therefore, $\gamma$ is a trade-off between ASR and SSIM. We set $\alpha$ and $\beta$ to 1 in our experiment to give the same importance to both factors.
+where $f$ is the model owned by the attacker and used during the optimization process, $x^a$ is the adversarial samples derived by $\mathcal{A}(f, x; s)$, and $\mathcal{A}$ is the adversarial procedure with parameter $s$. Therefore, $\gamma$ is a trade-off between ASR and SSIM.
 
 With [`evaluation.py`](https://github.com/Mhackiori/Adversarial-Transferability/blob/main/evaluation.py) we are evaluating all the adversarial samples that we generated on all the different models that we trained.
 

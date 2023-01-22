@@ -9,10 +9,10 @@ from torchmetrics import StructuralSimilarityIndexMeasure
 from torchvision import transforms
 
 from utils.balancedDataset import BalancedDataset
+from utils.const import *
+from utils.helperFunctions import *
 from utils.nonMathAttacks import NonMathAttacks
 from utils.tasks import currentTask
-from utils.helperFunctions import *
-from utils.const import *
 
 # Ranges and step for attack epsilon
 
@@ -85,7 +85,7 @@ for attack_name in attacksParams["math"].keys():
         toNormalizedTensor = transforms.Compose([
             transforms.Resize(INPUT_SIZE),
             transforms.ToTensor(),
-            transforms.Normalize(NORMALIZATION_PARAMS)
+            transforms.Normalize(NORMALIZATION_PARAMS[0], NORMALIZATION_PARAMS[1])
         ])
 
         for root, _, fnames in sorted(os.walk(os.path.join(MODELS_DIR, dataset), followlinks=True)):
@@ -259,7 +259,7 @@ for attack_name in attacksParams["nonmath"].keys():
         toNormalizedTensor = transforms.Compose([
             transforms.Resize(INPUT_SIZE),
             transforms.ToTensor(),
-            transforms.Normalize(NORMALIZATION_PARAMS)
+            transforms.Normalize(NORMALIZATION_PARAMS[0], NORMALIZATION_PARAMS[1])
         ])
 
         for root, _, fnames in sorted(os.walk(os.path.join(MODELS_DIR, dataset), followlinks=True)):

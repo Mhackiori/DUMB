@@ -10,10 +10,9 @@ import torchvision
 from torchvision import transforms
 
 from utils.balancedDataset import BalancedDataset
-from utils.nonMathAttacks import NonMathAttacks
-from utils.tasks import currentTask
-from utils.helperFunctions import *
 from utils.const import *
+from utils.helperFunctions import *
+from utils.nonMathAttacks import NonMathAttacks
 
 # Parameters
 
@@ -56,7 +55,7 @@ def evaluateModelsOnDataset(datasetFolder, datasetInfo):
     dataTransform = transforms.Compose([
         transforms.Resize(INPUT_SIZE),
         transforms.ToTensor(),
-        transforms.Normalize(NORMALIZATION_PARAMS)
+        transforms.Normalize(NORMALIZATION_PARAMS[0], NORMALIZATION_PARAMS[1])
     ])
 
     testDataset = BalancedDataset(
@@ -69,13 +68,6 @@ def evaluateModelsOnDataset(datasetFolder, datasetInfo):
     # Evaluate every model
     for root, _, fnames in sorted(os.walk(MODELS_DIR, followlinks=True)):
         for fname in sorted(fnames):
-            # Putting testDataset here to keep paths
-            # testDataset = BalancedDataset(
-            #     datasetFolder, transform=dataTransform, use_cache=True, check_images=False, with_path=True)
-
-            # setSeed()
-            # testDataLoader = DataLoader(
-            #     testDataset, batch_size=64, shuffle=True, num_workers=0, pin_memory=True)
 
             modelPath = os.path.join(root, fname)
 
@@ -189,7 +181,7 @@ for attack_name in attacks_names:
         toNormalizedTensor = transforms.Compose([
             transforms.Resize(INPUT_SIZE),
             transforms.ToTensor(),
-            transforms.Normalize(NORMALIZATION_PARAMS)
+            transforms.Normalize(NORMALIZATION_PARAMS[0], NORMALIZATION_PARAMS[1])
         ])
 
         for root, _, fnames in sorted(os.walk(os.path.join(MODELS_DIR, dataset), followlinks=True)):

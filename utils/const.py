@@ -25,7 +25,7 @@ BASELINE_PATH = f"./results/models/baseline/baseline_{currentTask}.csv"
 
 # Models
 
-NORMALIZATION_PARAMS = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+NORMALIZATION_PARAMS = [[0.485, 0.456, 0.406], [0.229, 0.224, 0.225]]
 INPUT_SIZE = 224
 
 # Dataset
