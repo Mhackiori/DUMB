@@ -80,11 +80,23 @@ pip install -r requirements.txt
 
 You now need to add the datasets in the repository. You can do this by downloading the folder [here]() and dropping it in this repository.
 
-To replicate the results in our paper, you need to execute the scripts in a specific order, or you can execute them one after another by running:
+To replicate the results in our paper, you need to execute the scripts in a specific order (`modelTrainer.py`, `attackGeneration.py` and `evaluation.py`), or you can execute them one after another by running the dedicated shell script.
 
 ```bash
-python3 modelTrainer.py && python3 attackGeneration.py && python3 evaluation.py
+chmod +x ./run.sh && ./run.sh
 ```
+
+If instead you want to run each script one by one, you will need to specify the task through an environment variable.
+
+* **TASK=0**: `[bike, motorbike]`
+* **TASK=1**: `[cat, dog]`
+* **TASK=2**: `[man, woman]`
+
+```bash
+export TASK=0 && python3 modelTrainer.py
+```
+
+
 
 <p align="right"><a href="#top">(back to top)</a></p>
 <div id="modelTrainer"></div>
@@ -121,7 +133,7 @@ With [`attackGeneration.py`](https://github.com/Mhackiori/Adversarial-Transferab
 These are the adversarial attacks that is possible to find in the literature. In particular, we use: BIM, DeepFool, FGSM, PGD, RFGSM, and TIFGSM. In the next Table, we include their correspondent papers and the parameter that we use for fine-tuning the attack. We also show the range in which the parameter has been tested and the step for the search (see <a href="#tuning">Parameter Tuning</a>).
 
 | Name              | Paper                                                                                                                                          | Parameter  |
-|-------------------|------------------------------------------------------------------------------------------------------------------------------------------------|:----------:|
+|:-----------------:|------------------------------------------------------------------------------------------------------------------------------------------------|:----------:|
 | **BIM**<br />(Linf)    | Adversarial Examples in the Physical World ([Kurakin et al., 2016](https://arxiv.org/abs/1607.02533))                                          | $\epsilon \in [0.01, 0.3]$<br />@ 0.01 step |
 | **DeepFool**<br />(L2) | DeepFool: A Simple and Accurate Method to Fool Deep Neural Networks ([Moosavi-Dezfooli et al., 2016](https://arxiv.org/abs/1511.04599))        | Overshoot $\in [10, 100]$<br />@ 1 step |
 | **FGSM**<br />(Linf)   | Explaining and harnessing adversarial examples ([Goodfellow et al., 2014](https://arxiv.org/abs/1412.6572))                                    | $\epsilon \in [0.01, 0.3]$<br />@ 0.01 step |
@@ -135,14 +147,14 @@ These are the adversarial attacks that is possible to find in the literature. In
 These are just visual modifications of the image obtained through filters or other means. A description of the individual attacks is provided in the next Table. If present, we also specify which parameter we use to define the level of perturbation added to the image.  We also show the range in which the parameter has been tested and the step for the search (see <a href="#tuning">Parameter Tuning</a>).
 
 | Name                         | Description                                                                                                                                                                                                                                                                                                                                         | Parameter   |
-|------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------:|
+|:----------------------------:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------:|
 | **Box Blur**                     | By applying this filter it is possible to blur the image by setting each pixel to the average value of the pixels in a square box extending radius pixels in each direction                                                                                                                                                                         | $r \in [0.5, 10]$<br />@ 0.5 step     |
 | **Gaussian Noise**               | A statistical noise having a probability density function equal to normal distribution                                                                                                                                                                                                                                                              | $\sigma \in [0.005, 0.1]$<br />@ 0.005 step    |
 | **Grayscale Filter**             | To get a grayscale image, the color information from each RGB channel is removed, leaving only the luminance values. Grayscale images contain only shades of gray and no color because maximum luminance is white and zero luminance is black, so everything in between is a shade of gray                                                          | N.A.        |
 | **Invert Color**                 | An image negative is produced by subtracting each pixel from the maximum intensity value, so for color images, colors are replaced by their complementary colors                                                                                                                                                                                    | N.A.        |
 | **Random Black Box**             | We draw a black square in a random position inside the central portion of the image in order to cover some crucial information                                                                                                                                                                                                                      | Square size $\in [10, 200]$<br />@ 10 step |
-| **Salt and Pepper**              | An image can be altered by setting a certain amount of the pixels in the image either black or white. The effect is similar to sprinkling white and black dots-salt and pepper-ones in the image                                                                                                                                                    | Amount $\in [0.05, 0.1]$<br />@ 0.005 step     |
-| **Split and Merge RGB Channels** | This transformation concerns splitting an RGB image into individual channels, swapping them, and then combining them into a new image. In particular, we obtained the values of the RGB channels and then merged them using green values for the red channel, red values for the green channel, and using the original values for the blue channel | N.A.        |
+| **Salt & Pepper**              | An image can be altered by setting a certain amount of the pixels in the image either black or white. The effect is similar to sprinkling white and black dots-salt and pepper-ones in the image                                                                                                                                                    | Amount $\in [0.05, 0.1]$<br />@ 0.005 step     |
+| **Split and Merge RGB** | This transformation concerns splitting an RGB image into individual channels, swapping them, and then combining them into a new image. In particular, we obtained the values of the RGB channels and then merged them using green values for the red channel, red values for the green channel, and using the original values for the blue channel | N.A.        |
 
 In the next Figure we show an example for each of the non-mathematical attacks.
 ![Non Mathematical Attacks](https://i.postimg.cc/c1m5b4Tm/cat-Non-Math-Attacks.jpg "Non Mathematical Attacks")
@@ -182,7 +194,7 @@ We created our own datasets by downloading images of cats and dogs from differen
 
 ## 🤝 Contribution
 
-In this work, we enhance the transferability landscape by proposing the rainbow table, a list of 9 scenarios that might occur during an attack by including the three variables of the dataset, class balance, and model architecture.
+In this work, we enhance the transferability landscape by proposing the rainbow table, a list of 8 scenarios that might occur during an attack by including the three variables of the dataset, class balance, and model architecture.
 
 | Case | Condition                                              | Attack Scenario                                                                                                                                                                                                                                                                           |
 |------|--------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

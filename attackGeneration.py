@@ -37,8 +37,6 @@ attacksParams = {
     }
 }
 
-# attacks["math"].keys()
-
 nonMathAttacks = NonMathAttacks()
 
 # Parameters

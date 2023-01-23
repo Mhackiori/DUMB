@@ -24,6 +24,11 @@ SHUFFLE_DATASET = False  # Shuffle the dataset
 ALPHA = 0.6
 BETA = 1 - ALPHA
 
+# If true, maximize gamma function
+# If false, take eps which gives maximum ASR when SSIM is over a threshold
+useGamma = False
+threshold = 0.4
+
 if not os.path.exists(os.path.join(os.getcwd(), ADVERSARIAL_DIR)):
     os.makedirs(os.path.join(os.getcwd(), ADVERSARIAL_DIR))
 
@@ -231,12 +236,19 @@ for attack_name in attacks_names:
                 ssims = list(df_atk['ssim'])
 
                 best = []
+                max_eps_idx = 0
                 for j in range(len(epss)):
-                    best.append((ALPHA * asrs[j]) + (BETA * ssims[j]))
+                    if useGamma:
+                        best.append((ALPHA * asrs[j]) + (BETA * ssims[j]))
+                    else:
+                        if ssims[j] > threshold and asrs[j] > asrs[max_eps_idx]:
+                            eps = epss[j]
+                            max_eps_idx = j
 
-                maxx = max(best)
-                best_index = best.index(maxx)
-                eps = epss[best_index]
+                if useGamma:
+                    maxx = max(best)
+                    best_index = best.index(maxx)
+                    eps = epss[best_index]
 
                 attacks = {
                     "BIM": BIM(model, eps=eps),
@@ -269,7 +281,7 @@ for attack_name in attacks_names:
                             if not os.path.exists(saveDir):
                                 os.makedirs(saveDir)
 
-                            print("[⚔️  ADVERSARIAL] {} @ {} - {} - {} {}".format(
+                            print("\n[⚔️  ADVERSARIAL] {} @ {} - {} - {} {}".format(
                                 attack,
                                 eps,
                                 modelDataset,
