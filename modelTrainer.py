@@ -449,7 +449,7 @@ for dataset in sorted(getSubDirs(DATASETS_DIR)):
     testDir = os.path.join(datasetDir, "test")
 
     toTensor = transforms.Compose([
-        transforms.Resize(input_size),
+        transforms.Resize(INPUT_SIZE),
         transforms.ToTensor(),
         transforms.Normalize(NORMALIZATION_PARAMS[0], NORMALIZATION_PARAMS[1])
     ])

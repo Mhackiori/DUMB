@@ -19,21 +19,20 @@ from utils.tasks import currentTask
 attacksParams = {
     "math": {
         "BIM": {"init": 0.01, "steps": 0.01, "threshold": 0.3},
-        "FGSM": {"init": 0.01, "steps": 0.01, "threshold": 0.3},
         "DeepFool": {"init": 10, "steps": 1, "threshold": 100},
-        "RFGSM": {"init": 0.01, "steps": 0.01, "threshold": 0.3},
+        "FGSM": {"init": 0.01, "steps": 0.01, "threshold": 0.3},
         "PGD": {"init": 0.01, "steps": 0.01, "threshold": 0.3},
+        "RFGSM": {"init": 0.01, "steps": 0.01, "threshold": 0.3},
         "TIFGSM": {"init": 0.01, "steps": 0.01, "threshold": 0.3}
     },
     "nonmath": {
-        "GaussianNoise": {"init": 0.005,    "steps": 0.005,    "threshold": 0.1},
         "BoxBlur": {"init": 0.5,    "steps": 0.5,    "threshold": 10},
-        "Sharpen": {"init": 1,    "steps": 0,    "threshold": 1},
-        "InvertColor": {"init": 1,    "steps": 0,    "threshold": 1},
+        "GaussianNoise": {"init": 0.005,    "steps": 0.005,    "threshold": 0.1},
         "GreyScale": {"init": 1,    "steps": 0,    "threshold": 1},
-        "SplitMergeRGB": {"init": 1,    "steps": 0,    "threshold": 1},
+        "InvertColor": {"init": 1,    "steps": 0,    "threshold": 1},
+        "RandomBlackBox": {"init": 10,    "steps": 10,    "threshold": 200},
         "SaltPepper": {"init": 0.005,    "steps": 0.005,    "threshold": 0.1},
-        "RandomBlackBox": {"init": 10,    "steps": 10,    "threshold": 200}
+        "SplitMergeRGB": {"init": 1,    "steps": 0,    "threshold": 1}
     }
 }
 
@@ -126,8 +125,8 @@ for attack_name in attacksParams["math"].keys():
                 while not effective:
                     attacks = {
                         "BIM": BIM(model, eps=eps),
-                        "FGSM": FGSM(model, eps=eps),
                         "DeepFool": DeepFool(model, overshoot=eps),
+                        "FGSM": FGSM(model, eps=eps),
                         "PGD": PGD(model, eps=eps),
                         "RFGSM": RFGSM(model, eps=eps),
                         "TIFGSM": TIFGSM(model, eps=eps)
@@ -302,14 +301,13 @@ for attack_name in attacksParams["nonmath"].keys():
 
                 while not effective:
                     attacks = {
-                        "GaussianNoise": nonMathAttacks.gaussianNoise,
                         "BoxBlur": nonMathAttacks.boxBlur,
-                        "Sharpen": nonMathAttacks.sharpen,
-                        "InvertColor": nonMathAttacks.invertColor,
+                        "GaussianNoise": nonMathAttacks.gaussianNoise,
                         "GreyScale": nonMathAttacks.greyscale,
-                        "SplitMergeRGB": nonMathAttacks.splitMergeRGB,
-                        "SaltPepper": nonMathAttacks.saltAndPepper,
+                        "InvertColor": nonMathAttacks.invertColor,
                         "RandomBlackBox": nonMathAttacks.randomBlackBox,
+                        "SaltPepper": nonMathAttacks.saltAndPepper,
+                        "SplitMergeRGB": nonMathAttacks.splitMergeRGB
                     }
                     for attack in attacks:
                         if attack == attack_name:
@@ -339,7 +337,7 @@ for attack_name in attacksParams["nonmath"].keys():
                                     os.makedirs(saveDir)
 
                                 outImage = image.copy()
-                                if attack != 'Sharpen' and attack != 'InvertColor' and attack != 'GreyScale' and attack != 'SplitMergeRGB':
+                                if attack != 'InvertColor' and attack != 'GreyScale' and attack != 'SplitMergeRGB':
                                     outImage = attacker(outImage, amount=eps)
                                 else:
                                     outImage = attacker(outImage)

@@ -141,7 +141,6 @@ attacks_names = [
     'RandomBlackBox',
     'RFGSM',
     'SaltPepper',
-    'Sharpen',
     'SplitMergeRGB',
     'TIFGSM'
 ]
@@ -158,7 +157,6 @@ attacks_names_math = [
 attack_names_static = [
     'GreyScale',
     'InvertColor',
-    'Sharpen',
     'SplitMergeRGB'
 ]
 
@@ -262,7 +260,6 @@ for attack_name in attacks_names:
                     "RandomBlackBox": NON_MATH_ATTACKS.randomBlackBox,
                     "RFGSM": RFGSM(model, eps=eps),
                     "SaltPepper": NON_MATH_ATTACKS.saltAndPepper,
-                    "Sharpen": NON_MATH_ATTACKS.sharpen,
                     "SplitMergeRGB": NON_MATH_ATTACKS.splitMergeRGB,
                     "TIFGSM": TIFGSM(model, eps=eps)
                 }

@@ -96,8 +96,6 @@ If instead you want to run each script one by one, you will need to specify the 
 export TASK=0 && python3 modelTrainer.py
 ```
 
-
-
 <p align="right"><a href="#top">(back to top)</a></p>
 <div id="modelTrainer"></div>
 
@@ -172,9 +170,9 @@ All mathematical attacks and most of non mathematical attacks include some kind 
 
 After generating attacks at different $\epsilon$, we decide the best value for this parameter by maximizing the sum of the ASR and the SSIM. The optimization is given by the following equation:
 
-$$\gamma = \arg \max_s \alpha \cdot \frac{1}{n}\sum_{i=1}^n f(x_i)\neq f(x_i^a) + \beta \cdot \frac{1}{n}\sum_{i=1}^n SSIM(x_i, x_i^a),$$
+$$\gamma = \arg \max_s \frac{1}{n}\sum_{i=1}^n f(x_i)\neq f(x_i^a) \mathrm{\quad subject\:to \quad} \frac{1}{n}\sum_{i=1}^n SSIM(x_i, x_i^a) \geq \alpha$$
 
-where $f$ is the model owned by the attacker and used during the optimization process, $x^a$ is the adversarial samples derived by $\mathcal{A}(f, x; s)$, and $\mathcal{A}$ is the adversarial procedure with parameter $s$. Therefore, $\gamma$ is a trade-off between ASR and SSIM.
+In the notation, $f$ is the model owned by the attacker and used during the optimization process, $x^a$ is the adversarial samples derived by $\mathcal{A}(f, x; s)$, and $\mathcal{A}$ is the adversarial procedure with parameter $s$.
 
 With [`evaluation.py`](https://github.com/Mhackiori/Adversarial-Transferability/blob/main/evaluation.py) we are evaluating all the adversarial samples that we generated on all the different models that we trained.
 

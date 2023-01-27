@@ -36,10 +36,6 @@ class NonMathAttacks():
         atkImage = image.filter(ImageFilter.BoxBlur(radius=amount))
         return atkImage
 
-    def sharpen(self, image):
-        atkImage = image.filter(ImageFilter.SHARPEN)
-        return atkImage
-
     def invertColor(self, image):
         atkImage = ImageChops.invert(image)
         return atkImage
