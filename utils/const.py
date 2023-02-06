@@ -22,6 +22,7 @@ EVALUATIONS_DIR = f"./results/attacks/evaluation/{currentTask}"
 
 MODEL_PREDICTIONS_PATH = f"./results/models/predictions/predictions_{currentTask}.csv"
 BASELINE_PATH = f"./results/models/baseline/baseline_{currentTask}.csv"
+SIMILARITY_PATH = f"./results/models/similarity/similarity_{currentTask}.csv"
 
 # Models
 

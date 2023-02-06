@@ -11,6 +11,7 @@ In this folder, you will find the data generated from the execution of the three
       <ul>
         <li><a href="#baseline">Baseline</a></li>
         <li><a href="#predictions">Predictions</a></li>
+        <li><a href="#similarity">Similarity</a></li>
       </ul>
     </li>
     <li>
@@ -40,6 +41,12 @@ In the [`baseline`](https://github.com/Mhackiori/Adversarial-Transferability/tre
 ### 🔮 Predictions
 
 In the [`baseline`](https://github.com/Mhackiori/Adversarial-Transferability/tree/main/results/models/predictions) folder, you will find one `csv` file for each of the tasks. These files are produced when running [`modelTrainer.py`](https://github.com/Mhackiori/Adversarial-Transferability/blob/main/modelTrainer.py) and contains the predictions computed by every trained model for every image in the test sets. This will be used in the attack generation step in order to evaluate the ASR only on those samples that were correctly classified by the target model, and thus ignore the ones that were already misclassified.
+
+<div id="similarity"></div>
+
+### 👥 Similarity
+
+In the [`similarity`](https://github.com/Mhackiori/Adversarial-Transferability/tree/main/results/models/similarity) folder, you will find one `csv` file for each of the tasks. These files are produced when running [`modelTrainer.py`](https://github.com/Mhackiori/Adversarial-Transferability/blob/main/modelTrainer.py) and contains the euclidian distance similarity of the embeddings of the two classes computed by the pretrained models (not fine tuned). Through the analysis of these values, we can justify the results obtained in [`baseline`](https://github.com/Mhackiori/Adversarial-Transferability/tree/main/results/models/predictions) and formalize the complexity of the different tasks.
 
 <div id="attacks"></div>
 

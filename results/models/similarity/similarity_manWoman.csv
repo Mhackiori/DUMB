@@ -1,0 +1,7 @@
+,dataset,model,inter,intra0,intra1
+0,bing,alexnet,0.123,0.119,0.127
+1,google,alexnet,0.113,0.114,0.112
+2,bing,resnet,0.041,0.039,0.039
+3,google,resnet,0.04,0.038,0.038
+4,bing,vgg,0.013,0.012,0.013
+5,google,vgg,0.012,0.012,0.012

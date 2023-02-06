@@ -494,8 +494,8 @@ for dataset in sorted(getSubDirs(DATASETS_DIR)):
 
 predictionsDF = pd.DataFrame(predictions)
 
-if not os.path.exists(os.path.dirname(MODEL_PREDICTIONS_PATH)):
-    os.makedirs(os.path.dirname(MODEL_PREDICTIONS_PATH))
+if not os.path.exists(os.path.dirname('/'.join(MODEL_PREDICTIONS_PATH.split('.csv')[0].split('/')[:-1])+'/')):
+    os.makedirs(os.path.dirname('/'.join(MODEL_PREDICTIONS_PATH.split('.csv')[0].split('/')[:-1])+'/'))
 
 predictionsDF.to_csv(MODEL_PREDICTIONS_PATH)
 
@@ -526,7 +526,113 @@ for dataset in sorted(getSubDirs(DATASETS_DIR)):
 
 modelsEvalsDF = pd.DataFrame(modelsEvals)
 
-if not os.path.exists(os.path.dirname(BASELINE_PATH)):
-    os.makedirs(os.path.dirname(BASELINE_PATH))
+if not os.path.exists(os.path.dirname('/'.join(BASELINE_PATH.split('.csv')[0].split('/')[:-1])+'/')):
+    os.makedirs(os.path.dirname('/'.join(BASELINE_PATH.split('.csv')[0].split('/')[:-1])+'/'))
 
 modelsEvalsDF.to_csv(BASELINE_PATH)
+
+print("\n\n" + "-" * 50)
+print("\n[🧠 MODELS EVALUATION - CLASS SIMILARITY]")
+
+# Defining clean pre-trained models (not finetunes)
+alexnet = models.alexnet(pretrained=True)
+resnet = models.resnet18(pretrained=True)
+vgg = models.vgg11_bn(pretrained=True)
+
+models = [alexnet, resnet, vgg]
+
+similarities = []
+
+for model, name in zip(models, MODEL_NAMES):
+    for dataset in ['bing', 'google']:
+
+        print(f'\n[🧮 EVALUATING] {name} - {dataset}')
+
+        # Loading test set
+        datasetDir = os.path.join(DATASETS_DIR, dataset)
+        testDir = os.path.join(datasetDir, "test")
+
+        toTensor = transforms.Compose([
+            transforms.Resize(INPUT_SIZE),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                NORMALIZATION_PARAMS[0], NORMALIZATION_PARAMS[1])
+        ])
+
+        testDataset = BalancedDataset(
+            testDir, transform=toTensor, use_cache=False, check_images=False)
+
+        setSeed()
+        testDataLoader = DataLoader(
+            testDataset, batch_size=16, shuffle=False)
+
+        model = model.to(DEVICE, non_blocking=True)
+
+        layer = model._modules.get('avgpool')
+
+        def copy_embeddings(m, i, o):
+            """
+            Copy embeddings from the avgpool layer.
+            """
+            o = o[:, :, 0, 0].detach().cpu().numpy().tolist()
+            outputs.append(o)
+
+        outputs = []
+
+        # Attach hook to avgpool layer
+        _ = layer.register_forward_hook(copy_embeddings)
+
+        model.eval()
+
+        for X, y in testDataLoader:
+            X = X.to(DEVICE, non_blocking=True)
+            _ = model(X)
+
+        list_embeddings = [item for sublist in outputs for item in sublist]
+        embedding_size = len(list_embeddings[0])
+
+        embeddings_0 = list_embeddings[:len(list_embeddings)//2]
+        embeddings_1 = list_embeddings[len(list_embeddings)//2:]
+
+        inter = []
+        intra0 = []
+        intra1 = []
+
+        print(f'\t[⛏️ INTER] ', end='')
+        for e0 in embeddings_0:
+            for e1 in embeddings_1:
+                dist = np.linalg.norm(np.array(e0) - np.array(e1))
+                inter.append(dist)
+        inter_dist = round(np.mean(inter)/embedding_size, 3)
+        print(inter_dist)
+
+        print(f'\t[⛏️ INTRA #0] ', end='')
+        for i, e0_0 in enumerate(embeddings_0):
+            for j, e0_1 in enumerate(embeddings_0):
+                if i != j:
+                    dist = np.linalg.norm(np.array(e0_0) - np.array(e0_1))
+                    intra0.append(dist)
+        intra0_dist = round(np.mean(intra0)/embedding_size, 3)
+        print(intra0_dist)
+
+        print(f'\t[⛏️ INTRA #1] ', end='')
+        for i, e1_0 in enumerate(embeddings_1):
+            for j, e1_1 in enumerate(embeddings_1):
+                if i != j:
+                    dist = np.linalg.norm(np.array(e1_0) - np.array(e1_1))
+                    intra1.append(dist)
+        intra1_dist = round(np.mean(intra1)/embedding_size, 3)
+        print(intra1_dist)
+
+        similarities.append({
+            'dataset': dataset,
+            'model': name,
+            'inter': inter_dist,
+            'intra0': intra0_dist,
+            'intra1': intra1_dist
+        })
+
+df = pd.DataFrame(similarities)
+if not os.path.exists(os.path.dirname('/'.join(SIMILARITY_PATH.split('.csv')[0].split('/')[:-1])+'/')):
+    os.makedirs(os.path.dirname('/'.join(SIMILARITY_PATH.split('.csv')[0].split('/')[:-1])+'/'))
+df.to_csv(SIMILARITY_PATH)

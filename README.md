@@ -78,7 +78,7 @@ Then, install the required Python packages by running:
 pip install -r requirements.txt
 ```
 
-You now need to add the datasets in the repository. You can do this by downloading the folder [here]() and dropping it in this repository.
+You now need to add the datasets in the repository. You can do this by downloading the folder [here](https://mega.nz/file/btsDjbyQ#LjGltqsc4k2pqRKp3_UQNmyiScXx8u696rftoUjplq4) and dropping it in this repository.
 
 To replicate the results in our paper, you need to execute the scripts in a specific order (`modelTrainer.py`, `attackGeneration.py` and `evaluation.py`), or you can execute them one after another by running the dedicated shell script.
 
@@ -170,7 +170,7 @@ All mathematical attacks and most of non mathematical attacks include some kind 
 
 After generating attacks at different $\epsilon$, we decide the best value for this parameter by maximizing the sum of the ASR and the SSIM. The optimization is given by the following equation:
 
-$$\gamma = \arg \max_s \frac{1}{n}\sum_{i=1}^n f(x_i)\neq f(x_i^a) \mathrm{\quad subject\:to \quad} \frac{1}{n}\sum_{i=1}^n SSIM(x_i, x_i^a) \geq \alpha$$
+$$\gamma = \arg \max_s \frac{1}{n}\sum_{i=1}^n f(x_i)\neq f(x_i^a) \mathrm{\quad subject \ to \quad} \frac{1}{n}\sum_{i=1}^n SSIM(x_i, x_i^a) \geq \alpha$$
 
 In the notation, $f$ is the model owned by the attacker and used during the optimization process, $x^a$ is the adversarial samples derived by $\mathcal{A}(f, x; s)$, and $\mathcal{A}$ is the adversarial procedure with parameter $s$.
 
