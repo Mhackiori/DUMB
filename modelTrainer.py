@@ -531,10 +531,12 @@ if not os.path.exists(os.path.dirname('/'.join(BASELINE_PATH.split('.csv')[0].sp
 
 modelsEvalsDF.to_csv(BASELINE_PATH)
 
+
+### COMPUTING CLASS SIMILARITY ###
 print("\n\n" + "-" * 50)
 print("\n[🧠 MODELS EVALUATION - CLASS SIMILARITY]")
 
-# Defining clean pre-trained models (not finetunes)
+# Defining clean pre-trained models (not finetuned)
 alexnet = models.alexnet(pretrained=True)
 resnet = models.resnet18(pretrained=True)
 vgg = models.vgg11_bn(pretrained=True)

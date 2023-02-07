@@ -162,6 +162,8 @@ attack_names_static = [
 
 print("[🧠 GENERATING BEST EPS FOR EACH ATTACK]\n")
 
+best_eps_data = []
+
 for attack_name in attacks_names:
     for dataset in sorted(datasetsToGenerate):
 
@@ -298,6 +300,13 @@ for attack_name in attacks_names:
                                 modelName,
                                 modelPercents
                             ))
+                            best_eps_data.append({
+                                'attack': attack_name,
+                                'model': modelName,
+                                'dataset': modelDataset,
+                                'balance': modelPercents,
+                                'best_eps': eps
+                            })
                             for path, cls in sorted(testDataset.imgs):
                                 clsName = testDataset.classes[cls]
 
@@ -322,6 +331,9 @@ for attack_name in attacks_names:
                                     saveDir, imageName), "JPEG")
 
                             print(f"\t[💾 IMAGES SAVED]")
+
+eps_df = pd.DataFrame(best_eps_data)
+eps_df.to_csv(os.path.join(HISTORY_DIR, 'all_eps.csv'))
 
 
 print("\n\n[🧠 ATTACKS EVALUATION]\n")

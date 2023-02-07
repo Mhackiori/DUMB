@@ -3,7 +3,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/Mhackiori/Adversarial-Transferability">
-    <img src="https://i.postimg.cc/P5m5r2sX/cat-no-bg.png" alt="Logo" width="150" height="150">
+    <img src="https://i.postimg.cc/wBVvMkRy/Literally-Rainbow-Table.png" alt="Logo" width="250" height="200">
   </a>
 
   <h1 align="center">Enhancing Adversarial Transferability Landscape with the Rainbow Table</h1>
@@ -58,7 +58,13 @@
 
 ## 🧩 Abstract
 
-Work in progress
+Evasion attacks are a threat to machine learning models, where adversaries attempt to affect classifiers by crafting inputted samples. 
+An alarming side-effect of evasion attacks is their ability to transfer among different models: this property is called \textit{transferability}. Therefore, an attacker can produce adversarial samples on a custom model to conduct the attack on a victim's organization later. 
+Although literature widely discusses how adversaries can transfer their attacks, their experimental settings are pretty limited and far from being real. 
+For instance, many experiments consider both attacker and defender sharing the same dataset, class balance, or model architecture. 
+
+In this work, we enhance the transferability landscape by proposing the \textit{rainbow table}, a list of eighth scenarios that might occur during an attack by including different combinations of datasets, class balances, and model architectures.
+Through our novel testbed consisting of three distinct in 6 distinct datasets, we evaluated $M$ state-of-the-art evasion attacks, and we show how they generally fail in most of the considered scenarios. 
 
 <p align="right"><a href="#top">(back to top)</a></p>
 <div id="usage"></div>
@@ -78,7 +84,7 @@ Then, install the required Python packages by running:
 pip install -r requirements.txt
 ```
 
-You now need to add the datasets in the repository. You can do this by downloading the folder [here](https://mega.nz/file/btsDjbyQ#LjGltqsc4k2pqRKp3_UQNmyiScXx8u696rftoUjplq4) and dropping it in this repository.
+You now need to add the datasets in the repository. You can do this by downloading the zip file [here](https://figshare.com/s/c5a05acaa9f75a3b05bf) and extracting it in this repository.
 
 To replicate the results in our paper, you need to execute the scripts in a specific order (`modelTrainer.py`, `attackGeneration.py` and `evaluation.py`), or you can execute them one after another by running the dedicated shell script.
 
