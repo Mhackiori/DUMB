@@ -58,13 +58,7 @@
 
 ## 🧩 Abstract
 
-Evasion attacks are a threat to machine learning models, where adversaries attempt to affect classifiers by crafting inputted samples. 
-An alarming side-effect of evasion attacks is their ability to transfer among different models: this property is called \textit{transferability}. Therefore, an attacker can produce adversarial samples on a custom model to conduct the attack on a victim's organization later. 
-Although literature widely discusses how adversaries can transfer their attacks, their experimental settings are pretty limited and far from being real. 
-For instance, many experiments consider both attacker and defender sharing the same dataset, class balance, or model architecture. 
-
-In this work, we enhance the transferability landscape by proposing the \textit{rainbow table}, a list of eighth scenarios that might occur during an attack by including different combinations of datasets, class balances, and model architectures.
-Through our novel testbed consisting of three distinct in 6 distinct datasets, we evaluated $M$ state-of-the-art evasion attacks, and we show how they generally fail in most of the considered scenarios. 
+>Evasion attacks are a threat to machine learning models, where adversaries attempt to affect classifiers by crafting inputted samples. An alarming side-effect of evasion attacks is their ability to transfer among different models: this property is called \textit{transferability}.Therefore, an attacker can produce adversarial samples on a custom model to conduct the attack on a victim's organization later. Although literature widely discusses how adversaries can transfer their attacks, their experimental settings are pretty limited and far from being real.For instance, many experiments consider both attacker and defender sharing the same dataset, class balance, or model architecture.In this work, we enhance the transferability landscape by proposing the \textit{rainbow table}, a list of eighth scenarios that might occur during an attack by including different combinations of datasets, class balances, and model architectures. Through our novel testbed consisting of three distinct in 6 distinct datasets, we evaluated $M$ state-of-the-art evasion attacks, and we show how they generally fail in most of the considered scenarios. 
 
 <p align="right"><a href="#top">(back to top)</a></p>
 <div id="usage"></div>
@@ -77,6 +71,7 @@ First, start by cloning the repository.
 git clone https://github.com/Mhackiori/Adversarial-Transferability.git
 cd Adversarial-Transferability
 ```
+<sup>NOTE: if you're accessing this data from the anonymized repository, the above command might not work. Instead, you can download the repository from [here](https://figshare.com/s/2e80e7a5c603577fc38a).</sup>
 
 Then, install the required Python packages by running:
 
@@ -144,6 +139,8 @@ These are the adversarial attacks that is possible to find in the literature. In
 | **PGD**<br />(Linf)    | Towards Deep Learning Models Resistant to Adversarial Attacks ([Mardry et al., 2017](https://arxiv.org/abs/1706.06083))                        | $\epsilon \in [0.01, 0.3]$<br />@ 0.01 step |
 | **RFGSM**<br />(Linf)  | Ensemble Adversarial Traning: Attacks and Defences ([Tramèr et al., 2017](https://arxiv.org/abs/1705.07204))                                   | $\epsilon \in [0.01, 0.3]$<br />@ 0.01 step |
 | **TIFGSM**<br />(Linf) | Evading Defenses to Transferable Adversarial Examples by Translation-Invariant Attacks ([Dong et al., 2019](https://arxiv.org/abs/1904.02884)) | $\epsilon \in [0.01, 0.3]$<br />@ 0.01 step |
+
+<sup>NOTE: if you're accessing this data from the anonymized repository, the above formulae might not be displayed correctly. This issue might be present in other places in this repository, but can be solved by rendering the Markdown code locally after downloading the repository.</sup>
 
 <div id="nonmathematical"></div>
 
