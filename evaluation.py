@@ -1,11 +1,12 @@
 import numpy as np
 import os
+import sys
 
 import pandas as pd
 from PIL import Image
 import torch
 from torch.utils.data import DataLoader
-from torchattacks import FGSM, DeepFool, BIM, RFGSM, PGD, TIFGSM
+from torchattacks import FGSM, DeepFool, BIM, RFGSM, PGD, Square, TIFGSM
 import torchvision
 from torchvision import transforms
 
@@ -13,6 +14,13 @@ from utils.balancedDataset import BalancedDataset
 from utils.const import *
 from utils.helperFunctions import *
 from utils.nonMathAttacks import NonMathAttacks
+
+import warnings
+warnings.filterwarnings("ignore")
+
+if not sys.warnoptions:
+    warnings.simplefilter("ignore")
+    os.environ["PYTHONWARNINGS"] = "ignore"  # Also affect subprocesses
 
 # Parameters
 
@@ -142,6 +150,7 @@ attacks_names = [
     'RFGSM',
     'SaltPepper',
     'SplitMergeRGB',
+    'Square',
     'TIFGSM'
 ]
 
@@ -151,6 +160,7 @@ attacks_names_math = [
     'FGSM',
     'PGD',
     'RFGSM',
+    'Square',
     'TIFGSM'
 ]
 
@@ -241,7 +251,7 @@ for attack_name in attacks_names:
                     if useGamma:
                         best.append((ALPHA * asrs[j]) + (BETA * ssims[j]))
                     else:
-                        if ssims[j] > threshold and asrs[j] > asrs[max_eps_idx]:
+                        if ssims[j] > threshold and asrs[j] >= asrs[max_eps_idx]:
                             eps = epss[j]
                             max_eps_idx = j
 
@@ -263,6 +273,7 @@ for attack_name in attacks_names:
                     "RFGSM": RFGSM(model, eps=eps),
                     "SaltPepper": NON_MATH_ATTACKS.saltAndPepper,
                     "SplitMergeRGB": NON_MATH_ATTACKS.splitMergeRGB,
+                    "Square": Square(model, eps=eps),
                     "TIFGSM": TIFGSM(model, eps=eps)
                 }
 

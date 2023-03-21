@@ -1,5 +1,6 @@
-import os
 import numpy as np
+import os
+import random
 
 import torch
 from torchvision import transforms
@@ -12,10 +13,14 @@ def getSubDirs(dir):
 
 
 def setSeed(seed=SEED):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-    np.random.seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = True
 
 
 def getScores(labels, predicted, complete=True):
@@ -60,14 +65,16 @@ def getScores(labels, predicted, complete=True):
 
 def evaluateModel(model, dataloader, dataset, modelInfo, dfMath):
     balance = "/".join([str(x) for x in modelInfo["balance"]])
-    missclassified = dfMath.loc[currentTask,
+    # Detecting samples that were misclassified by the base model
+    # In this way we evaluate only the ASR
+    misclassified = dfMath.loc[currentTask,
                                 modelInfo["model_name"],
                                 modelInfo["dataset"],
                                 balance,
                                 dataset]
-    missclassified = missclassified[missclassified["label"]
-                                    != missclassified["prediction"]]
-    missclassified = np.array(missclassified["name"])
+    misclassified = misclassified[misclassified["label"]
+                                    != misclassified["prediction"]]
+    misclassified = np.array(misclassified["name"])
 
     model.eval()
     labelsOutputs = []
@@ -82,7 +89,7 @@ def evaluateModel(model, dataloader, dataset, modelInfo, dfMath):
             _, preds = torch.max(outputs, 1)
 
         for pred, label, path in zip(preds, labels, paths):
-            if os.path.basename(path) not in missclassified:
+            if os.path.basename(path) not in misclassified:
                 labelsOutputs.append(pred)
                 labelsTargets.append(label)
 

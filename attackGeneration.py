@@ -2,9 +2,10 @@ import os
 
 import pandas as pd
 from PIL import Image
+import sys
 import torch
 from torch.utils.data import DataLoader
-from torchattacks import FGSM, DeepFool, BIM, RFGSM, PGD, TIFGSM
+from torchattacks import FGSM, DeepFool, BIM, RFGSM, PGD, Square, TIFGSM
 from torchmetrics import StructuralSimilarityIndexMeasure
 from torchvision import transforms
 
@@ -13,6 +14,13 @@ from utils.const import *
 from utils.helperFunctions import *
 from utils.nonMathAttacks import NonMathAttacks
 from utils.tasks import currentTask
+
+import warnings
+warnings.filterwarnings("ignore")
+
+if not sys.warnoptions:
+    warnings.simplefilter("ignore")
+    os.environ["PYTHONWARNINGS"] = "ignore"  # Also affect subprocesses
 
 # Ranges and step for attack epsilon
 
@@ -23,16 +31,17 @@ attacksParams = {
         "FGSM": {"init": 0.01, "steps": 0.01, "threshold": 0.3},
         "PGD": {"init": 0.01, "steps": 0.01, "threshold": 0.3},
         "RFGSM": {"init": 0.01, "steps": 0.01, "threshold": 0.3},
+        "Square": {"init": 0.1, "steps": 0.1, "threshold": 0.3},
         "TIFGSM": {"init": 0.01, "steps": 0.01, "threshold": 0.3}
     },
     "nonmath": {
-        "BoxBlur": {"init": 0.5,    "steps": 0.5,    "threshold": 10},
-        "GaussianNoise": {"init": 0.005,    "steps": 0.005,    "threshold": 0.1},
-        "GreyScale": {"init": 1,    "steps": 0,    "threshold": 1},
-        "InvertColor": {"init": 1,    "steps": 0,    "threshold": 1},
-        "RandomBlackBox": {"init": 10,    "steps": 10,    "threshold": 200},
-        "SaltPepper": {"init": 0.005,    "steps": 0.005,    "threshold": 0.1},
-        "SplitMergeRGB": {"init": 1,    "steps": 0,    "threshold": 1}
+        "BoxBlur": {"init": 0.5, "steps": 0.5, "threshold": 10},
+        "GaussianNoise": {"init": 0.005, "steps": 0.005, "threshold": 0.1},
+        "GreyScale": {"init": 1, "steps": 0, "threshold": 1},
+        "InvertColor": {"init": 1, "steps": 0, "threshold": 1},
+        "RandomBlackBox": {"init": 10, "steps": 10, "threshold": 200},
+        "SaltPepper": {"init": 0.005, "steps": 0.005, "threshold": 0.1},
+        "SplitMergeRGB": {"init": 1, "steps": 0, "threshold": 1}
     }
 }
 
@@ -129,6 +138,7 @@ for attack_name in attacksParams["math"].keys():
                         "FGSM": FGSM(model, eps=eps),
                         "PGD": PGD(model, eps=eps),
                         "RFGSM": RFGSM(model, eps=eps),
+                        "Square": Square(model, eps=eps),
                         "TIFGSM": TIFGSM(model, eps=eps)
                     }
                     for attack in attacks:
