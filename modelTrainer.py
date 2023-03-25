@@ -2,6 +2,7 @@ import copy
 import numpy as np
 import os
 from pathlib import Path
+import sys
 import time
 
 import pandas as pd
@@ -15,6 +16,13 @@ from utils.balancedDataset import BalancedDataset
 from utils.const import *
 from utils.helperFunctions import setSeed, getScores, getSubDirs
 from utils.tasks import currentTask
+
+import warnings
+warnings.filterwarnings("ignore")
+
+if not sys.warnoptions:
+    warnings.simplefilter("ignore")
+    os.environ["PYTHONWARNINGS"] = "ignore"
 
 # ITERABLE PARAMETERS
 
@@ -34,7 +42,7 @@ BATCH_SIZE = 128
 
 # Early stopping
 NUM_EPOCHS = 500  # Number of epochs to train for
-PATIENCE_ES = 20  # Patience for early stopping
+PATIENCE_ES = 25  # Patience for early stopping
 DELTA_ES = 0.0001  # Delta for early stopping
 
 # Flag for feature extracting. When False, we finetune the whole model,

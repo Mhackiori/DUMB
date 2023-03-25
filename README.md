@@ -3,12 +3,13 @@
 <br />
 <div align="center">
   <a href="https://github.com/Mhackiori/Adversarial-Transferability">
-    <img src="https://i.postimg.cc/wBVvMkRy/Literally-Rainbow-Table.png" alt="Logo" width="250" height="200">
+    <img src="https://i.postimg.cc/P5m5r2sX/cat-no-bg.png" alt="Logo" width="150" height="150">
   </a>
 
-  <h1 align="center">Enhancing Adversarial Transferability Landscape with the Rainbow Table</h1>
+  <h1 align="center">Your Attack Is Too DUMB</h1>
 
-  <p align="center">
+  <p align="center">Formalizing Attacker Scenarios for Adversarial Transferability
+    <br />
     <a href=""><strong>Paper in progress »</strong></a>
     <br />
     <br />
@@ -58,7 +59,7 @@
 
 ## 🧩 Abstract
 
->Evasion attacks are a threat to machine learning models, where adversaries attempt to affect classifiers by injecting malicious samples. An alarming side-effect of evasion attacks is their ability to transfer among different models: this property is called transferability. Therefore, an attacker can produce adversarial samples on a custom model to conduct the attack on a victim's organization later. Although literature widely discusses how adversaries can transfer their attacks, their experimental settings are pretty limited and far from being real. For instance, many experiments consider both attacker and defender sharing the same dataset, balance level (i.e., how the ground truth is distributed), and model architecture. In this work, we enhance the transferability landscape by proposing the rainbow table, a list of eighth scenarios that might occur during an attack by including different combinations of datasets, balance level, and model architectures. We then propose a novel testbed to evaluate the rainbow table, consisting in: 3 tasks with 2 datasets each, 4 types of balance levels, and 3 model architectures. Last, we analyze how different evasion attacks perform under different conditions. Through more than 20K of tests, we provide an in-depth overview of the importance of the rainbow table, and we show how different conditions might impact the attack's success.   
+>Evasion attacks are a threat to machine learning models, where adversaries attempt to affect classifiers by injecting malicious samples. An alarming side-effect of evasion attacks is their ability to transfer among different models: this property is called _transferability_. Therefore, an attacker can produce adversarial samples on a custom model to conduct the attack on a victim's organization later. Although literature widely discusses how adversaries can transfer their attacks, their experimental settings are limited and far from reality. For instance, many experiments consider both attacker and defender sharing the same dataset, balance level (i.e., how the ground truth is distributed), and model architecture. In this work, we propose the **DUMB** attacker model. This novel transferability measurement framework analyzes the impact of **D**ataset so**U**rces, **M**odel architecture, and the **B*alance of the ground truth. We then propose a novel testbed to evaluate many state-of-the-art evasion attacks with DUMB; the testbed consists of three tasks with two datasets each, four types of balance levels, and three model architectures. Last, we analyze how different evasion attacks perform under different conditions. Through more than 12K tests, we proved the importance we provide an in-depth overview of the DUMB attacker model's importance, and we show how different conditions might impact the attack's success. 
 
 <p align="right"><a href="#top">(back to top)</a></p>
 <div id="usage"></div>
@@ -138,6 +139,7 @@ These are the adversarial attacks that is possible to find in the literature. In
 | **FGSM**<br />(Linf)   | Explaining and harnessing adversarial examples ([Goodfellow et al., 2014](https://arxiv.org/abs/1412.6572))                                    | $\epsilon \in [0.01, 0.3]$<br />@ 0.01 step |
 | **PGD**<br />(Linf)    | Towards Deep Learning Models Resistant to Adversarial Attacks ([Mardry et al., 2017](https://arxiv.org/abs/1706.06083))                        | $\epsilon \in [0.01, 0.3]$<br />@ 0.01 step |
 | **RFGSM**<br />(Linf)  | Ensemble Adversarial Traning: Attacks and Defences ([Tramèr et al., 2017](https://arxiv.org/abs/1705.07204))                                   | $\epsilon \in [0.01, 0.3]$<br />@ 0.01 step |
+| **Square**<br />(Linf, L2)    | Square Attack: a query-efficient black-box adversarial attack via random search ([Andriushchenko et al., 2019](https://arxiv.org/abs/1912.00049))                        | $\epsilon \in [0.1, 0.3]$<br />@ 0.05 step |
 | **TIFGSM**<br />(Linf) | Evading Defenses to Transferable Adversarial Examples by Translation-Invariant Attacks ([Dong et al., 2019](https://arxiv.org/abs/1904.02884)) | $\epsilon \in [0.01, 0.3]$<br />@ 0.01 step |
 
 <sup>NOTE: if you're accessing this data from the anonymized repository, the above formulae might not be displayed correctly. This issue might be present in other places in this repository, but can be solved by rendering the Markdown code locally after downloading the repository.</sup>
@@ -155,7 +157,6 @@ These are just visual modifications of the image obtained through filters or oth
 | **Invert Color**                 | An image negative is produced by subtracting each pixel from the maximum intensity value, so for color images, colors are replaced by their complementary colors                                                                                                                                                                                    | N.A.        |
 | **Random Black Box**             | We draw a black square in a random position inside the central portion of the image in order to cover some crucial information                                                                                                                                                                                                                      | Square size $\in [10, 200]$<br />@ 10 step |
 | **Salt & Pepper**              | An image can be altered by setting a certain amount of the pixels in the image either black or white. The effect is similar to sprinkling white and black dots-salt and pepper-ones in the image                                                                                                                                                    | Amount $\in [0.05, 0.1]$<br />@ 0.005 step     |
-| **Split and Merge RGB** | This transformation concerns splitting an RGB image into individual channels, swapping them, and then combining them into a new image. In particular, we obtained the values of the RGB channels and then merged them using green values for the red channel, red values for the green channel, and using the original values for the blue channel | N.A.        |
 
 In the next Figure we show an example for each of the non-mathematical attacks.
 ![Non Mathematical Attacks](https://i.postimg.cc/c1m5b4Tm/cat-Non-Math-Attacks.jpg "Non Mathematical Attacks")
@@ -195,7 +196,7 @@ We created our own datasets by downloading images of cats and dogs from differen
 
 ## 🤝 Contribution
 
-In this work, we enhance the transferability landscape by proposing the rainbow table, a list of 8 scenarios that might occur during an attack by including the three variables of the dataset, class balance, and model architecture.
+In this work, we enhance the transferability landscape by proposing the DUMB attacker model, a list of 8 scenarios that might occur during an attack by including the three variables of the dataset, class balance, and model architecture.
 
 | Case | Condition                                              | Attack Scenario                                                                                                                                                                                                                                                                           |
 |------|--------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

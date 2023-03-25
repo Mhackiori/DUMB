@@ -20,7 +20,7 @@ warnings.filterwarnings("ignore")
 
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
-    os.environ["PYTHONWARNINGS"] = "ignore"  # Also affect subprocesses
+    os.environ["PYTHONWARNINGS"] = "ignore"
 
 # Ranges and step for attack epsilon
 
@@ -31,7 +31,7 @@ attacksParams = {
         "FGSM": {"init": 0.01, "steps": 0.01, "threshold": 0.3},
         "PGD": {"init": 0.01, "steps": 0.01, "threshold": 0.3},
         "RFGSM": {"init": 0.01, "steps": 0.01, "threshold": 0.3},
-        "Square": {"init": 0.1, "steps": 0.1, "threshold": 0.3},
+        "Square": {"init": 0.1, "steps": 0.05, "threshold": 0.3},
         "TIFGSM": {"init": 0.01, "steps": 0.01, "threshold": 0.3}
     },
     "nonmath": {
@@ -282,9 +282,7 @@ for attack_name in attacksParams["nonmath"].keys():
                 modelDataset = modelData["dataset"]
                 modelName = modelData["model_name"]
 
-                # if not modelName in modelsGenerateOnly:
                 torch.cuda.empty_cache()
-                # continue
 
                 modelPercents = "_".join([str(x)
                                           for x in modelData["balance"]])

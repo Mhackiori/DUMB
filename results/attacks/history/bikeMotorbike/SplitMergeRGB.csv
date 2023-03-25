@@ -1,5 +1,5 @@
 ,attack,task,model,balance,dataset,ssim,eps,asr,asr_0,asr_1
-0,SplitMergeRGB,bikeMotorbike,alexnet,20_80,bing,0.85701984167099,1,0.0033898305,0.006896551724137931,0.0
+0,SplitMergeRGB,bikeMotorbike,alexnet,20_80,bing,0.85701984167099,1,0.0034013605,0.006944444444444444,0.0
 1,SplitMergeRGB,bikeMotorbike,alexnet,30_70,bing,0.85701984167099,1,0.0034482758,0.007142857142857143,0.0
 2,SplitMergeRGB,bikeMotorbike,alexnet,40_60,bing,0.85701984167099,1,0.0,0.0,0.0
 3,SplitMergeRGB,bikeMotorbike,alexnet,50_50,bing,0.85701984167099,1,0.0034129692,0.0,0.006711409395973154
@@ -12,9 +12,9 @@
 10,SplitMergeRGB,bikeMotorbike,vgg,40_60,bing,0.85701984167099,1,0.0,0.0,0.0
 11,SplitMergeRGB,bikeMotorbike,vgg,50_50,bing,0.85701984167099,1,0.0,0.0,0.0
 12,SplitMergeRGB,bikeMotorbike,alexnet,20_80,google,0.8833047747612,1,0.0033898305,0.006896551724137931,0.0
-13,SplitMergeRGB,bikeMotorbike,alexnet,30_70,google,0.8833047747612,1,0.006779661,0.0,0.013513513513513514
-14,SplitMergeRGB,bikeMotorbike,alexnet,40_60,google,0.8833047747612,1,0.006779661,0.0,0.013605442176870748
-15,SplitMergeRGB,bikeMotorbike,alexnet,50_50,google,0.8833047747612,1,0.0067340066,0.0,0.013605442176870748
+13,SplitMergeRGB,bikeMotorbike,alexnet,30_70,google,0.8833047747612,1,0.010169491,0.0,0.02027027027027027
+14,SplitMergeRGB,bikeMotorbike,alexnet,40_60,google,0.8833047747612,1,0.006756757,0.0,0.013422818791946308
+15,SplitMergeRGB,bikeMotorbike,alexnet,50_50,google,0.8833047747612,1,0.006756757,0.0,0.0136986301369863
 16,SplitMergeRGB,bikeMotorbike,resnet,20_80,google,0.8833047747612,1,0.0,0.0,0.0
 17,SplitMergeRGB,bikeMotorbike,resnet,30_70,google,0.8833047747612,1,0.0033557047,0.0,0.006666666666666667
 18,SplitMergeRGB,bikeMotorbike,resnet,40_60,google,0.8833047747612,1,0.0,0.0,0.0

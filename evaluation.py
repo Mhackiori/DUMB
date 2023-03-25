@@ -20,7 +20,7 @@ warnings.filterwarnings("ignore")
 
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
-    os.environ["PYTHONWARNINGS"] = "ignore"  # Also affect subprocesses
+    os.environ["PYTHONWARNINGS"] = "ignore"
 
 # Parameters
 
@@ -311,13 +311,6 @@ for attack_name in attacks_names:
                                 modelName,
                                 modelPercents
                             ))
-                            best_eps_data.append({
-                                'attack': attack_name,
-                                'model': modelName,
-                                'dataset': modelDataset,
-                                'balance': modelPercents,
-                                'best_eps': eps
-                            })
                             for path, cls in sorted(testDataset.imgs):
                                 clsName = testDataset.classes[cls]
 
@@ -342,6 +335,14 @@ for attack_name in attacks_names:
                                     saveDir, imageName), "JPEG")
 
                             print(f"\t[💾 IMAGES SAVED]")
+
+                        best_eps_data.append({
+                            'attack': attack_name,
+                            'model': modelName,
+                            'dataset': modelDataset,
+                            'balance': modelPercents,
+                            'best_eps': eps
+                        })
 
 eps_df = pd.DataFrame(best_eps_data)
 eps_df.to_csv(os.path.join(HISTORY_DIR, 'all_eps.csv'))
