@@ -10,7 +10,7 @@
 
   <p align="center">Formalizing Attacker Scenarios for Adversarial Transferability
     <br />
-    <a href=""><strong>Paper in progress »</strong></a>
+    <a href="https://arxiv.org/abs/2306.15363"><strong>Preprint Available »</strong></a>
     <br />
     <br />
     <a href="https://github.com/MarcoAlecci">Marco Alecci</a>
@@ -69,10 +69,9 @@
 First, start by cloning the repository.
 
 ```bash
-git clone https://github.com/Mhackiori/Adversarial-Transferability.git
-cd Adversarial-Transferability
+git clone https://github.com/Mhackiori/DUMB.git
+cd DUMB
 ```
-<sup>NOTE: if you're accessing this data from the anonymized repository, the above command might not work. Instead, you can download the repository from [here](https://figshare.com/s/2e80e7a5c603577fc38a).</sup>
 
 Then, install the required Python packages by running:
 
@@ -103,7 +102,7 @@ export TASK=0 && python3 modelTrainer.py
 
 ### 💪🏽 Model Trainer
 
-With [`modelTrainer.py`](https://github.com/Mhackiori/Adversarial-Transferability/blob/main/modelTrainer.py) we are training three different model architectures on one of the tasks, which can be selected by changing the value of `currentTask` in [`tasks.py`](https://github.com/Mhackiori/Adversarial-Transferability/blob/main/utils/tasks.py). The three model architectures that we consider are the following.
+With [`modelTrainer.py`](https://github.com/Mhackiori/DUMB/blob/main/modelTrainer.py) we are training three different model architectures on one of the tasks, which can be selected by changing the value of `currentTask` in [`tasks.py`](https://github.com/Mhackiori/DUMB/blob/main/utils/tasks.py). The three model architectures that we consider are the following.
 
 |          Name          | Paper                                                        |
 | :--------------------: | ------------------------------------------------------------ |
@@ -118,14 +117,14 @@ The script will automatically handle the different balancing scenarios of the da
 * **[30/70]**: 1500 images for `class_0`, 3500 images for `class_1`
 * **[20/80]**: 875 images for `class_0`, 3500 images for `class_1`
 
-Once the 24 models are trained (2 datasets * 3 architectures * 4 dataset balancing), the same script will evaluate all of them in the same test set. First, we will save the [`predictions`](https://github.com/Mhackiori/Adversarial-Transferability/tree/main/results/models/predictions) of each of the images. This data will be used to create adversarial sample only from images that are correctly classified by the model. Then, we will save the evaluation of the models on the test set, which gives us a [`baseline`](https://github.com/Mhackiori/Adversarial-Transferability/tree/main/results/models/baseline) to evaluate the difficulty of the task.
+Once the 24 models are trained (2 datasets * 3 architectures * 4 dataset balancing), the same script will evaluate all of them in the same test set. First, we will save the [`predictions`](https://github.com/Mhackiori/DUMB/tree/main/results/models/predictions) of each of the images. This data will be used to create adversarial sample only from images that are correctly classified by the model. Then, we will save the evaluation of the models on the test set, which gives us a [`baseline`](https://github.com/Mhackiori/DUMB/tree/main/results/models/baseline) to evaluate the difficulty of the task.
 
 <p align="right"><a href="#top">(back to top)</a></p>
 <div id="attackGeneration"></div>
 
 ### ⚔️ Attacks Generation
 
-With [`attackGeneration.py`](https://github.com/Mhackiori/Adversarial-Transferability/blob/main/attackGeneration.py) we are generating the attacks through the [Torchattacks](https://github.com/Harry24k/adversarial-attacks-pytorch) library and the [Pillow](https://pillow.readthedocs.io/en/stable/) library. Indeed, we divide the attacks in two main categories:
+With [`attackGeneration.py`](https://github.com/Mhackiori/DUMB/blob/main/attackGeneration.py) we are generating the attacks through the [Torchattacks](https://github.com/Harry24k/adversarial-attacks-pytorch) library and the [Pillow](https://pillow.readthedocs.io/en/stable/) library. Indeed, we divide the attacks in two main categories:
 
 <div id="mathematical"></div>
 
@@ -178,7 +177,7 @@ $$\gamma = \arg \max_s \frac{1}{n}\sum_{i=1}^n f(x_i)\neq f(x_i^a) \mathrm{\quad
 
 In the notation, $f$ is the model owned by the attacker and used during the optimization process, $x^a$ is the adversarial samples derived by $\mathcal{A}(f, x; s)$, and $\mathcal{A}$ is the adversarial procedure with parameter $s$.
 
-With [`evaluation.py`](https://github.com/Mhackiori/Adversarial-Transferability/blob/main/evaluation.py) we are evaluating all the adversarial samples that we generated on all the different models that we trained.
+With [`evaluation.py`](https://github.com/Mhackiori/DUMB/blob/main/evaluation.py) we are evaluating all the adversarial samples that we generated on all the different models that we trained.
 
 <p align="right"><a href="#top">(back to top)</a></p>
 <div id="datasets"></div>
