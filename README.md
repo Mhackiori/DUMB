@@ -2,7 +2,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/Mhackiori/Adversarial-Transferability">
+  <a href="https://github.com/Mhackiori/DUMB">
     <img src="https://i.postimg.cc/P5m5r2sX/cat-no-bg.png" alt="Logo" width="150" height="150">
   </a>
 
@@ -100,7 +100,7 @@ Then, install the required Python packages by running:
 pip install -r requirements.txt
 ```
 
-You now need to add the datasets in the repository. You can do this by downloading the zip file [here](https://figshare.com/s/c5a05acaa9f75a3b05bf) and extracting it in this repository.
+You now need to add the datasets in the repository. You can do this by downloading the zip file [here](https://forms.gle/fZtKiysf4FVdU3ui6) and extracting it in this repository.
 
 To replicate the results in our paper, you need to execute the scripts in a specific order (`modelTrainer.py`, `attackGeneration.py` and `evaluation.py`), or you can execute them one after another by running the dedicated shell script.
 
