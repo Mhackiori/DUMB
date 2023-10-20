@@ -10,7 +10,7 @@
 
   <p align="center">Formalizing Attacker Scenarios for Adversarial Transferability
     <br />
-    <a href="https://arxiv.org/abs/2306.15363"><strong>Preprint Available »</strong></a>
+    <a href="https://doi.org/10.1145/3607199.3607227"><strong>Paper Available »</strong></a>
     <br />
     <br />
     <a href="https://github.com/MarcoAlecci">Marco Alecci</a>
@@ -72,13 +72,21 @@
 Please, cite this work when referring to the DUMB attacker model:
 
 ```
-@misc{alecci2023attack,
-      title={Your Attack Is Too DUMB: Formalizing Attacker Scenarios for Adversarial Transferability}, 
-      author={Marco Alecci and Mauro Conti and Francesco Marchiori and Luca Martinelli and Luca Pajola},
-      year={2023},
-      eprint={2306.15363},
-      archivePrefix={arXiv},
-      primaryClass={cs.CR}
+@inproceedings{10.1145/3607199.3607227,
+    author = {Alecci, Marco and Conti, Mauro and Marchiori, Francesco and Martinelli, Luca and Pajola, Luca},
+    title = {Your Attack Is Too DUMB: Formalizing Attacker Scenarios for Adversarial Transferability},
+    year = {2023},
+    isbn = {9798400707650},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/3607199.3607227},
+    doi = {10.1145/3607199.3607227},
+    booktitle = {Proceedings of the 26th International Symposium on Research in Attacks, Intrusions and Defenses},
+    pages = {315–329},
+    numpages = {15},
+    keywords = {Adversarial Machine Learning, Evasion Attacks, Adversarial Attacks, Surrogate Model, Transferability},
+    location = {Hong Kong, China},
+    series = {RAID '23}
 }
 ```
 
